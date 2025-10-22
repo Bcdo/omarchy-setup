@@ -132,7 +132,15 @@ tooltip {
   box-shadow: inset 0 0 0 1px rgba(153, 209, 219, 0.2); /* Inner shadow for outline effect */
   outline: none;
 }
-#custom-pomodoro.pause {
+
+/* Manually paused during work - red background */
+#custom-pomodoro.pause.work {
   color: #fff;
   background-color: #a55;
+}
+
+/* Manually paused during break - orange/amber background */
+#custom-pomodoro.pause.break {
+  color: #fff;
+  background-color: #d97;
 }

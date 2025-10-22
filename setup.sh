@@ -24,11 +24,26 @@ backup_and_copy() {
     
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
-    CHANGES_MADE+=("✏️  Restored: $dest")
+    CHANGES_MADE+=("✏️  Applied: $dest")
 }
 
 echo "=== Omarchy Setup Restore ==="
 echo
+
+# Ask about machine type upfront (before installations)
+MACHINE_TYPE="desktop"
+if [ -f configs/hypr/hypridle-desktop.conf ] || [ -f configs/hypr/hypridle-laptop.conf ]; then
+    read -p "Is this a laptop or desktop? (l/d): " machine_type_input
+    case "$machine_type_input" in
+        l|L|laptop)
+            MACHINE_TYPE="laptop"
+            ;;
+        d|D|desktop|*)
+            MACHINE_TYPE="desktop"
+            ;;
+    esac
+    echo
+fi
 
 # Install missing packages
 echo "📦 Installing packages..."
@@ -61,24 +76,13 @@ echo "⌨️  Restoring Hyprland configuration..."
 if [ -d configs/hypr ] && [ "$(ls -A configs/hypr)" ]; then
     mkdir -p ~/.config/hypr
     
-    # Ask about machine type for hypridle config
-    if [ -f configs/hypr/hypridle-desktop.conf ] || [ -f configs/hypr/hypridle-laptop.conf ]; then
-        echo
-        read -p "Is this a laptop or desktop? (l/d): " machine_type
-        case "$machine_type" in
-            l|L|laptop)
-                if [ -f configs/hypr/hypridle-laptop.conf ]; then
-                    backup_and_copy configs/hypr/hypridle-laptop.conf ~/.config/hypr/hypridle.conf
-                    CHANGES_MADE+=("💻 Applied laptop hypridle config")
-                fi
-                ;;
-            d|D|desktop|*)
-                if [ -f configs/hypr/hypridle-desktop.conf ]; then
-                    backup_and_copy configs/hypr/hypridle-desktop.conf ~/.config/hypr/hypridle.conf
-                    CHANGES_MADE+=("🖥️  Applied desktop hypridle config")
-                fi
-                ;;
-        esac
+    # Apply hypridle config based on machine type
+    if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/hypr/hypridle-laptop.conf ]; then
+        backup_and_copy configs/hypr/hypridle-laptop.conf ~/.config/hypr/hypridle.conf
+        CHANGES_MADE+=("💻 Applied laptop hypridle config (with suspend)")
+    elif [ -f configs/hypr/hypridle-desktop.conf ]; then
+        backup_and_copy configs/hypr/hypridle-desktop.conf ~/.config/hypr/hypridle.conf
+        CHANGES_MADE+=("🖥️  Applied desktop hypridle config")
     fi
     
     # Copy all other hypr configs (except hypridle variants)
@@ -88,9 +92,9 @@ if [ -d configs/hypr ] && [ "$(ls -A configs/hypr)" ]; then
             [ -f "$file" ] && backup_and_copy "$file" ~/.config/hypr/$filename
         fi
     done
-    echo "   → Hyprland config restored"
+    echo "   → Hyprland config applied"
 else
-    echo "   → No Hyprland config to restore"
+    echo "   → No Hyprland config to apply"
 fi
 
 # Restore systemd services/timers
@@ -113,9 +117,9 @@ if [ -d configs/systemd ] && [ "$(ls -A configs/systemd)" ]; then
     done
     
     systemctl --user daemon-reload
-    echo "   → Systemd configs restored and enabled"
+    echo "   → Daily theme randomizer timer enabled"
 else
-    echo "   → No systemd configs to restore"
+    echo "   → No systemd configs to apply"
 fi
 
 # Restore Waybar config
@@ -126,9 +130,9 @@ if [ -d configs/waybar ] && [ "$(ls -A configs/waybar)" ]; then
     for file in configs/waybar/*; do
         [ -f "$file" ] && backup_and_copy "$file" ~/.config/waybar/$(basename "$file")
     done
-    echo "   → Waybar config restored"
+    echo "   → Waybar config applied (custom clock format + Pomodoro module)"
 else
-    echo "   → No Waybar config to restore"
+    echo "   → No Waybar config to apply"
 fi
 
 # Restore custom binaries (pomodoro module, etc.)
@@ -145,7 +149,7 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
     done
     echo "   → Custom binaries installed"
 else
-    echo "   → No custom binaries to restore"
+    echo "   → No custom binaries to install"
 fi
 
 # Restore webapps (.desktop files)
@@ -156,9 +160,29 @@ if [ -d webapps ] && [ "$(ls -A webapps/*.desktop 2>/dev/null)" ]; then
     for file in webapps/*.desktop; do
         [ -f "$file" ] && backup_and_copy "$file" ~/.local/share/applications/$(basename "$file")
     done
-    echo "   → Web apps restored"
+    echo "   → Web apps installed"
 else
-    echo "   → No web apps to restore"
+    echo "   → No web apps to install"
+fi
+
+# Restore themes
+echo
+echo "🎨 Restoring Omarchy themes..."
+if [ -d themes ] && [ "$(ls -A themes)" ]; then
+    mkdir -p ~/.config/omarchy/themes
+    for theme_dir in themes/*/; do
+        if [ -d "$theme_dir" ]; then
+            THEME_NAME=$(basename "$theme_dir")
+            # Skip if it's a symlink in the config dir (system theme)
+            if [ ! -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
+                cp -r "$theme_dir" ~/.config/omarchy/themes/
+                CHANGES_MADE+=("🎨 Installed theme: $THEME_NAME")
+            fi
+        fi
+    done
+    echo "   → Themes installed"
+else
+    echo "   → No themes to install"
 fi
 
 # Summary

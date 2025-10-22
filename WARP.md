@@ -21,6 +21,7 @@ This is the primary command. It:
 - Restores Waybar configs to `~/.config/waybar/`
 - Installs custom binaries to `~/.local/bin/`
 - Installs systemd user services/timers to `~/.config/systemd/user/`
+- Restores custom Omarchy themes to `~/.config/omarchy/themes/`
 - Installs webapp .desktop files to `~/.local/share/applications/`
 - Creates timestamped backups (`.bak.YYYY-MM-DD_HH-MM-SS`) before overwriting files
 
@@ -62,6 +63,11 @@ configs/
 scripts/
   bin/                     # Custom executables (installed to ~/.local/bin)
     waybar-module-pomodoro # Compiled binary for Pomodoro timer module
+themes/                    # Custom Omarchy themes (29 themes)
+  aetheria/                # Example theme directory
+  crimson-gold/
+  cyberpunk/
+  ...
 webapps/                   # .desktop files for web applications
 packages.txt               # Official Arch packages
 aur-packages.txt           # AUR packages
@@ -112,6 +118,13 @@ setup.sh                   # Main restore script
 1. Create `.service` and `.timer` files in `configs/systemd/`
 2. Ensure filenames match (e.g., `foo.service` and `foo.timer`)
 3. Run `./setup.sh` to install and enable the timer
+
+### Adding or updating themes
+1. Place theme directory in `themes/`
+2. Run `./setup.sh` to copy to `~/.config/omarchy/themes/`
+3. Use `omarchy-menu` to switch themes or the systemd timer will randomize
+
+**Note**: System themes (catppuccin, gruvbox, nord, etc.) are symlinked from `~/.local/share/omarchy/themes/` and should not be included in this repo.
 
 ## Important Notes
 
