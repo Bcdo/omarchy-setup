@@ -18,6 +18,8 @@ omarchy-setup/
 │   ├── waybar/               # Waybar status bar
 │   │   ├── config.jsonc
 │   │   └── style.css
+│   ├── mako/                 # Notification daemon config
+│   │   └── config
 │   └── systemd/              # Custom systemd services/timers
 ├── scripts/
 │   └── bin/                  # Custom binaries (installed to ~/.local/bin)
@@ -40,6 +42,7 @@ The script will first ask if this is a laptop or desktop (for `hypridle` configu
 - Install missing AUR packages from `aur-packages.txt`
 - Apply Hyprland configs to `~/.config/hypr/` (keybindings, idle behavior, etc.)
 - Apply Waybar config to `~/.config/waybar/` (custom clock format + Pomodoro timer module)
+- Apply Mako config to `~/.config/mako/` (notification styling, including Pomodoro timer notifications)
 - Install custom binaries to `~/.local/bin/` (waybar-module-pomodoro)
 - Install systemd daily theme randomizer timer to `~/.config/systemd/user/`
 - Install custom Omarchy themes to `~/.config/omarchy/themes/`
@@ -65,6 +68,14 @@ systemctl --user status random-omarchy-theme.timer
 # View timer logs
 journalctl --user -u random-omarchy-theme.service
 ```
+
+### Customize Pomodoro Notifications
+
+The Pomodoro timer sends notifications styled via `configs/mako/config`. To customize:
+
+1. Edit `~/.config/mako/config` (or `configs/mako/config` in this repo)
+2. Modify the `[summary="🍅 Pomodoro Timer"]` section (size, font, position, etc.)
+3. Reload mako: `makoctl reload`
 
 ## Notes
 
