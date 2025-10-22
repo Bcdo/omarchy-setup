@@ -85,9 +85,9 @@ tooltip {
 /* The following is not default with omarchy*/
 
 #custom-pomodoro {
-  padding: 0.3rem 0.7rem; /* Consistent padding with other modules (e.g., cpu, uptime) */
+  padding: 0.2rem 0.7rem; /* Consistent padding with other modules (e.g., cpu, uptime) */
   border-radius: 6px; /* Consistent rounded corners with other individual modules */
-  margin: 5px 0px;
+  margin: 0px 0px;
   min-width: 0;
   border: none;
   outline: none; /* Ensure no default outline */
@@ -97,7 +97,7 @@ tooltip {
     color 0.2s ease-in-out,
     outline 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out;
-  color: #babbf1; /* A calm color, consistent with custom-uptime */
+  color: @foreground; /* Same colour as the rest of the waybar text */
   font-weight: 600; /* Slightly bolder for the timer, consistent with clock */
 }
 
@@ -120,8 +120,8 @@ tooltip {
 }
 
 /* --- Highlighted state for Pomodoro module when running (work or break) --- */
-#custom-pomodoro.work,
-#custom-pomodoro.break {
+#custom-pomodoro.work:not(.pause),
+#custom-pomodoro.break:not(.pause) {
   color: #99d1db; /* Text color consistent with active workspaces button */
   background-color: rgba(
     153,
@@ -133,13 +133,14 @@ tooltip {
   outline: none;
 }
 
-/* Manually paused during work - red background */
+/* Paused during work - only show red if timer has started (elapsed_time > 0) */
+/* When at 00:00 waiting to start, this will use default styling instead */
 #custom-pomodoro.pause.work {
   color: #fff;
   background-color: #a55;
 }
 
-/* Manually paused during break - orange/amber background */
+/* Paused during break - orange/amber background */
 #custom-pomodoro.pause.break {
   color: #fff;
   background-color: #d97;
