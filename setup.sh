@@ -135,6 +135,19 @@ else
     echo "   → No Waybar config to apply"
 fi
 
+# Restore mako config
+echo
+echo "🔔 Restoring mako notification configuration..."
+if [ -f configs/mako/config ]; then
+    mkdir -p ~/.config/mako
+    # Remove the existing symlink if it exists
+    [ -L ~/.config/mako/config ] && rm ~/.config/mako/config
+    backup_and_copy configs/mako/config ~/.config/mako/config
+    echo "   → Mako config applied (custom Pomodoro notifications)"
+else
+    echo "   → No mako config to apply"
+fi
+
 # Restore custom binaries (pomodoro module, etc.)
 echo
 echo "🔧 Restoring custom binaries..."

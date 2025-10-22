@@ -1,0 +1,13 @@
+# Include the current Omarchy theme
+include=~/.config/omarchy/current/theme/mako.ini
+
+# Custom styling for Pomodoro notifications
+[summary="🍅 Pomodoro Timer"]
+font=CaskaydiaMono Nerd Font 18
+width=600
+height=200
+padding=40
+border-size=4
+default-timeout=0
+anchor=center
+group-by=summary
