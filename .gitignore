@@ -1,0 +1,10 @@
+# Backup files created by setup script
+*.bak.*
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Log files
+*.log

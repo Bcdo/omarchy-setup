@@ -1,0 +1,4 @@
+firefox-developer-edition
+qbittorrent
+qemu-full
+virt-manager

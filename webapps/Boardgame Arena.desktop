@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Boardgame Arena
+Comment=Boardgame Arena
+Exec=omarchy-launch-webapp https://boardgamearena.com/gameinprogress
+Terminal=false
+Type=Application
+Icon=/home/bcdo/.local/share/applications/icons/Boardgame Arena.png
+StartupNotify=true

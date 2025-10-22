@@ -1,0 +1,138 @@
+@import "../omarchy/current/theme/waybar.css";
+
+* {
+  background-color: @background;
+  color: @foreground;
+
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  font-family: "CaskaydiaMono Nerd Font";
+  font-size: 12px;
+}
+
+.modules-left {
+  margin-left: 8px;
+}
+
+.modules-right {
+  margin-right: 8px;
+}
+
+#workspaces button {
+  all: initial;
+  padding: 0 6px;
+  margin: 0 0.5px;
+  min-width: 9px;
+}
+
+#workspaces button.empty {
+  opacity: 0.5;
+}
+
+#cpu,
+#battery,
+#pulseaudio,
+#custom-omarchy,
+#custom-screenrecording-indicator,
+#custom-update {
+  min-width: 12px;
+  margin: 0 7.5px;
+}
+
+#tray {
+  margin-right: 16px;
+}
+
+#bluetooth {
+  margin-right: 17px;
+}
+
+#network {
+  margin-right: 13px;
+}
+
+#custom-expand-icon {
+  margin-right: 20px;
+}
+
+tooltip {
+  padding: 2px;
+}
+
+#custom-update {
+  font-size: 10px;
+}
+
+#clock {
+  margin-left: 8.75px;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+#custom-screenrecording-indicator {
+  min-width: 12px;
+  margin-left: 8.75px;
+  font-size: 10px;
+}
+
+#custom-screenrecording-indicator.active {
+  color: #a55555;
+}
+
+/* The following is not default with omarchy*/
+
+#custom-pomodoro {
+  padding: 0.3rem 0.7rem; /* Consistent padding with other modules (e.g., cpu, uptime) */
+  border-radius: 6px; /* Consistent rounded corners with other individual modules */
+  margin: 5px 0px;
+  min-width: 0;
+  border: none;
+  outline: none; /* Ensure no default outline */
+  /* Transition for background-color, color, outline, and box-shadow for smooth effect */
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    outline 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+  color: #babbf1; /* A calm color, consistent with custom-uptime */
+  font-weight: 600; /* Slightly bolder for the timer, consistent with clock */
+}
+
+/* Positioning and spacing for the custom-pomodoro module */
+#custom-pomodoro {
+  margin-left: 5px; /* Spacing from the previous module (e.g., clock) */
+  margin-right: 5px; /* Spacing before the seamless right bar starts (e.g., bluetooth) */
+}
+
+/* Hover effect for the new pomodoro module (consistent with others + rectangular outline) */
+#custom-pomodoro:hover {
+  background-color: rgb(
+    41,
+    42,
+    53
+  ); /* Brighter highlight, consistent with other individual modules */
+  color: #c6d0f5; /* Text color change on hover, consistent with other individual modules */
+  outline: 1px solid rgba(255, 255, 255, 0.1); /* Rectangular outline on hover */
+  outline-offset: -1px;
+}
+
+/* --- Highlighted state for Pomodoro module when running (work or break) --- */
+#custom-pomodoro.work,
+#custom-pomodoro.break {
+  color: #99d1db; /* Text color consistent with active workspaces button */
+  background-color: rgba(
+    153,
+    209,
+    219,
+    0.1
+  ); /* Background color consistent with active workspaces button */
+  box-shadow: inset 0 0 0 1px rgba(153, 209, 219, 0.2); /* Inner shadow for outline effect */
+  outline: none;
+}
+#custom-pomodoro.pause {
+  color: #fff;
+  background-color: #a55;
+}

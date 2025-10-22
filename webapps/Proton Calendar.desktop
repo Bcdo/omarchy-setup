@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Proton Calendar
+Comment=Proton Calendar
+Exec=omarchy-launch-webapp https://calendar.proton.me/u/1/
+Terminal=false
+Type=Application
+Icon=/home/bcdo/.local/share/applications/icons/Proton Calendar.png
+StartupNotify=true

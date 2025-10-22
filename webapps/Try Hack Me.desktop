@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Try Hack Me
+Comment=Try Hack Me
+Exec=omarchy-launch-webapp https://tryhackme.com/dashboard
+Terminal=false
+Type=Application
+Icon=/home/bcdo/.local/share/applications/icons/Try Hack Me.png
+StartupNotify=true

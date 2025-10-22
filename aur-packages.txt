@@ -1,0 +1,3 @@
+jetbrains-toolbox
+plex-media-server
+yacreader

@@ -1,0 +1,7 @@
+[Unit]
+Description=Apply random Omarchy theme (oneshot)
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/random-omarchy-theme.sh
+

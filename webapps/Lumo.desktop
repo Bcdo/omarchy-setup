@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Lumo
+Comment=Lumo
+Exec=omarchy-launch-webapp https://lumo.proton.me/u/0/
+Terminal=false
+Type=Application
+Icon=/home/bcdo/.local/share/applications/icons/Lumo.png
+StartupNotify=true
