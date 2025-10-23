@@ -141,6 +141,37 @@ else
     echo "   → No mako config to apply"
 fi
 
+# Restore nvim config
+echo
+echo "✏️  Restoring Neovim configuration..."
+if [ -d configs/nvim ]; then
+    # Restore lazyvim.json (extras configuration)
+    if [ -f configs/nvim/lazyvim.json ]; then
+        backup_and_copy configs/nvim/lazyvim.json ~/.config/nvim/lazyvim.json
+        echo "   → LazyVim extras configuration applied"
+    fi
+    
+    # Restore plugin configs
+    if [ -d configs/nvim/lua/plugins ] && [ "$(ls -A configs/nvim/lua/plugins)" ]; then
+        mkdir -p ~/.config/nvim/lua/plugins
+        for file in configs/nvim/lua/plugins/*; do
+            [ -f "$file" ] && backup_and_copy "$file" ~/.config/nvim/lua/plugins/$(basename "$file")
+        done
+        echo "   → Custom plugin configs applied"
+    fi
+    
+    # Restore snippets
+    if [ -d configs/nvim/snippets ] && [ "$(ls -A configs/nvim/snippets)" ]; then
+        mkdir -p ~/.config/nvim/snippets
+        for file in configs/nvim/snippets/*; do
+            [ -f "$file" ] && backup_and_copy "$file" ~/.config/nvim/snippets/$(basename "$file")
+        done
+        echo "   → Custom snippets applied"
+    fi
+else
+    echo "   → No nvim config to apply"
+fi
+
 # Restore custom binaries (pomodoro module, etc.)
 echo
 echo "🔧 Restoring custom binaries..."

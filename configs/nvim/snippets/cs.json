@@ -1,0 +1,437 @@
+{
+  "Create Entity": {
+    "prefix": "createentity",
+    "body": [
+      "using System.ComponentModel.DataAnnotations;",
+      "",
+      "namespace RestApiProject.Models;",
+      "",
+      "/// <summary>",
+      "/// ${1:EntityName} entity demonstrating modern EF Core patterns",
+      "/// ",
+      "/// LEARNING NOTES:",
+      "/// - Uses modern C# nullable reference types",
+      "/// - Includes audit fields (CreatedAt, UpdatedAt)",
+      "/// - Implements soft delete pattern (optional)",
+      "/// - Has navigation properties for relationships",
+      "/// - Follows domain-driven design principles",
+      "/// </summary>",
+      "public class ${1:EntityName}",
+      "{",
+      "    public int Id { get; set; }",
+      "",
+      "    [Required]",
+      "    [StringLength(${2:100})]",
+      "    public string ${3:Name} { get; set; } = string.Empty;",
+      "",
+      "    ${4:// Add additional properties here}",
+      "",
+      "    // Audit fields (important for production apps)",
+      "    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;",
+      "    public DateTime? UpdatedAt { get; set; }",
+      "    public bool IsActive { get; set; } = true;",
+      "",
+      "    // Soft delete pattern (uncomment if needed)",
+      "    // public bool IsDeleted { get; set; } = false;",
+      "    // public DateTime? DeletedAt { get; set; }",
+      "",
+      "    // Navigation properties (relationships)",
+      "    ${5:// Add navigation properties here}",
+      "",
+      "    // Computed properties (not stored in DB)",
+      "    ${6:// Add computed properties here}",
+      "}"
+    ],
+    "description": "Create a complete EF Core entity with modern patterns"
+  },
+
+  "Create DTOs": {
+    "prefix": "createdtos",
+    "body": [
+      "namespace RestApiProject.DTOs;",
+      "",
+      "/// <summary>",
+      "/// DTOs for ${1:Entity} operations - Modern C# record patterns",
+      "/// ",
+      "/// LEARNING NOTES:",
+      "/// - Records are immutable by default",
+      "/// - Perfect for DTOs (Data Transfer Objects)",
+      "/// - Automatic equality comparisons",
+      "/// - Clean, concise syntax",
+      "/// - Validation attributes for API contracts",
+      "/// </summary>",
+      "",
+      "// INPUT DTOs (from client)",
+      "public record Create${1:Entity}Dto(",
+      "    ${2:string Name}",
+      ");",
+      "",
+      "public record Update${1:Entity}Dto(",
+      "    ${3:string? Name = null}",
+      ");",
+      "",
+      "// OUTPUT DTOs (to client) ",
+      "public record ${1:Entity}ResponseDto(",
+      "    int Id,",
+      "    ${4:string Name},",
+      "    DateTime CreatedAt,",
+      "    DateTime? UpdatedAt,",
+      "    bool IsActive",
+      ");",
+      "",
+      "public record ${1:Entity}SummaryDto(",
+      "    int Id,",
+      "    ${5:string Name},",
+      "    DateTime CreatedAt,",
+      "    bool IsActive",
+      ");",
+      "",
+      "// QUERY DTOs (for filtering/searching)",
+      "public record Get${1:Entity}sQuery(",
+      "    string? SearchTerm = null,",
+      "    bool? IsActive = null,",
+      "    int Page = 1,",
+      "    int PageSize = 10,",
+      "    string SortBy = \"CreatedAt\",",
+      "    string SortDirection = \"desc\"",
+      ") : IRequest<Result<PagedResult<${1:Entity}SummaryDto>>>;"
+    ],
+    "description": "Create DTOs with modern C# record patterns"
+  },
+
+  "Create Validator": {
+    "prefix": "createvalidator",
+    "body": [
+      "using FluentValidation;",
+      "using Microsoft.EntityFrameworkCore;",
+      "using RestApiProject.Data;",
+      "using RestApiProject.DTOs;",
+      "",
+      "namespace RestApiProject.Validators;",
+      "",
+      "/// <summary>",
+      "/// Validator for Create${1:Entity}Dto - Advanced FluentValidation patterns",
+      "/// ",
+      "/// LEARNING NOTES:",
+      "/// - FluentValidation provides powerful, fluent validation rules",
+      "/// - Async validation for database checks",
+      "/// - Custom error messages",
+      "/// - Business rule validation",
+      "/// - Dependency injection support",
+      "/// </summary>",
+      "public class Create${1:Entity}DtoValidator : AbstractValidator<Create${1:Entity}Dto>",
+      "{",
+      "    private readonly ApplicationDbContext _context;",
+      "    ",
+      "    public Create${1:Entity}DtoValidator(ApplicationDbContext context)",
+      "    {",
+      "        _context = context;",
+      "        ",
+      "        RuleFor(x => x.${2:Name})",
+      "            .NotEmpty().WithMessage(\"${2:Name} is required\")",
+      "            .MaximumLength(${3:100}).WithMessage(\"${2:Name} cannot exceed {MaxLength} characters\")",
+      "            ${4:// .MinimumLength(2).WithMessage(\"Name must be at least 2 characters\")};",
+      "",
+      "        // Add more validation rules here",
+      "        ${5:// Add additional validation rules}",
+      "",
+      "        // Example async validation (uncomment if needed)",
+      "        // RuleFor(x => x.Email)",
+      "        //     .MustAsync(BeUniqueEmail).WithMessage(\"Email already exists\");",
+      "    }",
+      "",
+      "    // Example async validation method",
+      "    private async Task<bool> BeUniqueEmail(string email, CancellationToken token)",
+      "    {",
+      "        return !await _context.${1:Entity}s.AnyAsync(x => x.Email == email, token);",
+      "    }",
+      "}",
+      "",
+      "/// <summary>",
+      "/// Validator for Update${1:Entity}Dto",
+      "/// </summary>",
+      "public class Update${1:Entity}DtoValidator : AbstractValidator<Update${1:Entity}Dto>",
+      "{",
+      "    public Update${1:Entity}DtoValidator()",
+      "    {",
+      "        // Update validation rules (usually more lenient)",
+      "        ${6:// Add update validation rules}",
+      "    }",
+      "}"
+    ],
+    "description": "Create FluentValidation validators"
+  },
+
+  "Create Commands": {
+    "prefix": "createcommands",
+    "body": [
+      "using MediatR;",
+      "using RestApiProject.Common;",
+      "using RestApiProject.DTOs;",
+      "",
+      "namespace RestApiProject.Features.${1:Entities}.Commands;",
+      "",
+      "/// <summary>",
+      "/// Commands for ${2:Entity} operations - CQRS pattern",
+      "/// ",
+      "/// LEARNING NOTES:",
+      "/// - Commands represent write operations (Create, Update, Delete)",
+      "/// - They should have descriptive names",
+      "/// - Return types wrapped in Result<T> for consistent error handling",
+      "/// - Commands are immutable records for thread safety",
+      "/// - MediatR handles the command dispatch",
+      "/// </summary>",
+      "",
+      "public record Create${2:Entity}Command(Create${2:Entity}Dto ${3:entityData}Data) : IRequest<Result<${2:Entity}ResponseDto>>;",
+      "",
+      "public record Update${2:Entity}Command(int Id, Update${2:Entity}Dto ${3:entityData}Data) : IRequest<Result<${2:Entity}ResponseDto>>;",
+      "",
+      "public record Delete${2:Entity}Command(int Id) : IRequest<Result>;",
+      "",
+      "// Additional commands as needed",
+      "public record Toggle${2:Entity}ActiveCommand(int Id) : IRequest<Result<${2:Entity}ResponseDto>>;"
+    ],
+    "description": "Create CQRS command patterns"
+  },
+
+  "Create Controller": {
+    "prefix": "createcontroller",
+    "body": [
+      "using Asp.Versioning;",
+      "using MediatR;",
+      "using Microsoft.AspNetCore.Mvc;",
+      "using RestApiProject.DTOs;",
+      "using RestApiProject.Features.${1:Entities}.Commands;",
+      "using RestApiProject.Features.${1:Entities}.Queries;",
+      "",
+      "namespace RestApiProject.Controllers;",
+      "",
+      "/// <summary>",
+      "/// Modern ${2:Entity}s Controller demonstrating CQRS + MediatR patterns",
+      "/// ",
+      "/// LEARNING NOTES:",
+      "/// - Controller is THIN - no business logic!",
+      "/// - Uses MediatR to send commands/queries to handlers",
+      "/// - Consistent error handling with Result pattern",
+      "/// - Clean, readable, maintainable code",
+      "/// - Easy to test (just test the handlers)",
+      "/// - Follows RESTful conventions",
+      "/// </summary>",
+      "[ApiController]",
+      "[ApiVersion(\"1.0\")]",
+      "[Route(\"api/v{version:apiVersion}/[controller]\")]",
+      "[Produces(\"application/json\")]",
+      "public class ${2:Entity}sController : ControllerBase",
+      "{",
+      "    private readonly IMediator _mediator;",
+      "",
+      "    public ${2:Entity}sController(IMediator mediator)",
+      "    {",
+      "        _mediator = mediator;",
+      "    }",
+      "",
+      "    /// <summary>",
+      "    /// Get all ${3:entity}s with pagination and filtering",
+      "    /// </summary>",
+      "    [HttpGet]",
+      "    [ProducesResponseType(typeof(PagedResult<${2:Entity}SummaryDto>), StatusCodes.Status200OK)]",
+      "    [ProducesResponseType(StatusCodes.Status400BadRequest)]",
+      "    public async Task<ActionResult<PagedResult<${2:Entity}SummaryDto>>> Get${2:Entity}s(",
+      "        [FromQuery] string? searchTerm = null,",
+      "        [FromQuery] bool? isActive = null,",
+      "        [FromQuery] int page = 1,",
+      "        [FromQuery] int pageSize = 10,",
+      "        [FromQuery] string sortBy = \"CreatedAt\",",
+      "        [FromQuery] string sortDirection = \"desc\")",
+      "    {",
+      "        var query = new Get${2:Entity}sQuery(searchTerm, isActive, page, pageSize, sortBy, sortDirection);",
+      "        var result = await _mediator.Send(query);",
+      "",
+      "        return result.IsSuccess ",
+      "            ? Ok(result.Value)",
+      "            : BadRequest(result.Error);",
+      "    }",
+      "",
+      "    /// <summary>",
+      "    /// Create a new ${2:Entity}",
+      "    /// </summary>",
+      "    [HttpPost]",
+      "    [ProducesResponseType(typeof(${2:Entity}ResponseDto), StatusCodes.Status201Created)]",
+      "    [ProducesResponseType(StatusCodes.Status400BadRequest)]",
+      "    public async Task<ActionResult<${2:Entity}ResponseDto>> Create${2:Entity}([FromBody] Create${2:Entity}Dto create${2:Entity}Dto)",
+      "    {",
+      "        var result = await _mediator.Send(new Create${2:Entity}Command(create${2:Entity}Dto));",
+      "",
+      "        if (result.IsSuccess)",
+      "        {",
+      "            return CreatedAtAction(",
+      "                nameof(Get${2:Entity}), ",
+      "                new { id = result.Value!.Id, version = \"1.0\" }, ",
+      "                result.Value);",
+      "        }",
+      "",
+      "        return BadRequest(result.Error);",
+      "    }",
+      "",
+      "    ${4:// Add more endpoints here}",
+      "}"
+    ],
+    "description": "Create REST API controller with CQRS patterns"
+  },
+
+  "Common Usings": {
+    "prefix": "usings",
+    "body": [
+      "using System.ComponentModel.DataAnnotations;",
+      "using Microsoft.EntityFrameworkCore;",
+      "using FluentValidation;",
+      "using AutoMapper;",
+      "using MediatR;",
+      "using Microsoft.AspNetCore.Mvc;",
+      "using Asp.Versioning;"
+    ],
+    "description": "Common C# using statements"
+  },
+
+  "Namespace": {
+    "prefix": "namespace",
+    "body": [
+      "namespace RestApiProject.${1:Folder};"
+    ],
+    "description": "Namespace template"
+  },
+
+  "Record": {
+    "prefix": "record",
+    "body": [
+      "public record ${1:RecordName}(${2:string Property});"
+    ],
+    "description": "Simple record definition"
+  },
+
+  "Result Success": {
+    "prefix": "resultok",
+    "body": [
+      "return Result.Success();"
+    ],
+    "description": "Return success result"
+  },
+
+  "Result Failure": {
+    "prefix": "resultfail",
+    "body": [
+      "return Result.Failure(\"${1:Error message}\");"
+    ],
+    "description": "Return failure result"
+  },
+
+  "Result Success with Value": {
+    "prefix": "resultokvalue",
+    "body": [
+      "return Result<${1:T}>.Success(${2:value});"
+    ],
+    "description": "Return success result with value"
+  },
+
+  "Result Failure with Value": {
+    "prefix": "resultfailvalue",
+    "body": [
+      "return Result<${1:T}>.Failure(\"${2:Error message}\");"
+    ],
+    "description": "Return failure result with value"
+  },
+
+  "XML Summary": {
+    "prefix": "summary",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Brief description of what this does}",
+      "/// </summary>"
+    ],
+    "description": "Basic XML documentation summary"
+  },
+
+  "XML Summary with Parameters": {
+    "prefix": "summaryparams",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Brief description of what this method does}",
+      "/// </summary>",
+      "/// <param name=\"${2:paramName}\">${3:Description of parameter}</param>",
+      "/// <returns>${4:Description of return value}</returns>"
+    ],
+    "description": "XML documentation with parameters and return value"
+  },
+
+  "XML Summary Full": {
+    "prefix": "summaryfull",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Brief description of what this method does}",
+      "/// </summary>",
+      "/// <param name=\"${2:paramName}\">${3:Description of parameter}</param>",
+      "/// <returns>${4:Description of return value}</returns>",
+      "/// <example>",
+      "/// ${5:// Example usage:}",
+      "/// ${6:// var result = SomeMethod(\"example\");}",
+      "/// </example>",
+      "/// <exception cref=\"${7:ArgumentException}\">Thrown when ${8:condition}</exception>"
+    ],
+    "description": "Complete XML documentation with example and exceptions"
+  },
+
+  "XML Summary for Property": {
+    "prefix": "summaryprop",
+    "body": [
+      "/// <summary>",
+      "/// Gets or sets ${1:description of what this property represents}",
+      "/// </summary>"
+    ],
+    "description": "XML documentation for properties"
+  },
+
+  "XML Summary for Class": {
+    "prefix": "summaryclass",
+    "body": [
+      "/// <summary>",
+      "/// ${1:Brief description of what this class does}",
+      "/// </summary>",
+      "/// <remarks>",
+      "/// ${2:Additional details, usage notes, or implementation notes}",
+      "/// </remarks>"
+    ],
+    "description": "XML documentation for classes with remarks"
+  },
+
+  "TODO Comment": {
+    "prefix": "todo",
+    "body": [
+      "// TODO: ${1:Description of what needs to be done}"
+    ],
+    "description": "TODO comment"
+  },
+
+  "FIXME Comment": {
+    "prefix": "fixme",
+    "body": [
+      "// FIXME: ${1:Description of what needs to be fixed}"
+    ],
+    "description": "FIXME comment"
+  },
+
+  "NOTE Comment": {
+    "prefix": "note",
+    "body": [
+      "// NOTE: ${1:Important note or explanation}"
+    ],
+    "description": "NOTE comment"
+  },
+
+  "HACK Comment": {
+    "prefix": "hack",
+    "body": [
+      "// HACK: ${1:Explanation of temporary workaround}"
+    ],
+    "description": "HACK comment"
+  }
+}

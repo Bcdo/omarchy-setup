@@ -20,6 +20,9 @@ omarchy-setup/
 │   │   └── style.css
 │   ├── mako/                 # Notification daemon config
 │   │   └── config
+│   ├── nvim/                 # Neovim customizations
+│   │   ├── lua/plugins/       # Custom plugin configs
+│   │   └── snippets/          # Custom code snippets
 │   └── systemd/              # Custom systemd services/timers
 ├── scripts/
 │   └── bin/                  # Custom binaries (installed to ~/.local/bin)
@@ -43,6 +46,7 @@ The script will first ask if this is a laptop or desktop (for `hypridle` configu
 - Apply Hyprland configs to `~/.config/hypr/` (keybindings, idle behavior, etc.)
 - Apply Waybar config to `~/.config/waybar/` (custom clock format + Pomodoro timer module)
 - Apply Mako config to `~/.config/mako/` (notification styling, including Pomodoro timer notifications)
+- Apply Neovim configs to `~/.config/nvim/` (custom plugins, snippets, surround rules)
 - Install custom binaries to `~/.local/bin/` (waybar-module-pomodoro)
 - Install systemd daily theme randomizer timer to `~/.config/systemd/user/`
 - Install custom Omarchy themes to `~/.config/omarchy/themes/`
@@ -76,6 +80,23 @@ The Pomodoro timer sends notifications styled via `configs/mako/config`. To cust
 1. Edit `~/.config/mako/config` (or `configs/mako/config` in this repo)
 2. Modify the `[summary="🍅 Pomodoro Timer"]` section (size, font, position, etc.)
 3. Reload mako: `makoctl reload`
+
+### Neovim Customizations
+
+This setup includes custom Neovim configurations on top of Omarchy's base nvim setup:
+
+- **LazyVim Extras**: Pre-configured language support and plugins:
+  - AI: GitHub Copilot & Copilot Chat
+  - Coding: mini-surround, yanky (clipboard manager)
+  - Editor: neo-tree (file explorer)
+  - Formatting: Prettier
+  - Languages: Astro, C#/.NET, Git, JSON, Markdown, Python, Tailwind, TypeScript, Vue
+  - Linting: ESLint
+  - Utils: mini-hipatterns
+- **Custom Surround**: Added `sac` keybinding to surround text with `{{ }}` (double curly braces with spaces)
+- **Custom Snippets**: C# snippets in `configs/nvim/snippets/cs.json`
+
+These configs are applied to `~/.config/nvim/`.
 
 ## Notes
 
