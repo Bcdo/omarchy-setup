@@ -9,7 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
-CHANGES_MADE=()
 
 # Helper function to backup and copy files
 backup_and_copy() {
@@ -19,12 +18,11 @@ backup_and_copy() {
     if [ -f "$dest" ]; then
         local backup="${dest}.bak.${TIMESTAMP}"
         cp "$dest" "$backup"
-        CHANGES_MADE+=("📝 Backed up: $dest → ${backup}")
+        echo "   📝 Backup: $(basename "$dest") → $(basename "$dest").bak"
     fi
     
     mkdir -p "$(dirname "$dest")"
     cp "$src" "$dest"
-    CHANGES_MADE+=("✏️  Applied: $dest")
 }
 
 echo "=== Omarchy Setup Restore ==="
@@ -51,7 +49,6 @@ if [ -f packages.txt ]; then
     MISSING_PKGS=$(comm -23 <(sort packages.txt) <(pacman -Qq | sort))
     if [ -n "$MISSING_PKGS" ]; then
         echo "$MISSING_PKGS" | sudo pacman -S --needed -
-        CHANGES_MADE+=("📦 Installed official packages: $(echo "$MISSING_PKGS" | wc -l) packages")
     else
         echo "   → All official packages already installed"
     fi
@@ -63,8 +60,7 @@ if [ -f aur-packages.txt ] && [ -s aur-packages.txt ]; then
     echo "📦 Installing AUR packages..."
     MISSING_AUR=$(comm -23 <(sort aur-packages.txt) <(yay -Qq | sort))
     if [ -n "$MISSING_AUR" ]; then
-        echo "$MISSING_AUR" | yay -S --needed -
-        CHANGES_MADE+=("📦 Installed AUR packages: $(echo "$MISSING_AUR" | wc -l) packages")
+        echo "$MISSING_AUR" | yay -S --needed --answerdiff None --answerclean None --removemake -
     else
         echo "   → All AUR packages already installed"
     fi
@@ -79,10 +75,8 @@ if [ -d configs/hypr ] && [ "$(ls -A configs/hypr)" ]; then
     # Apply hypridle config based on machine type
     if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/hypr/hypridle-laptop.conf ]; then
         backup_and_copy configs/hypr/hypridle-laptop.conf ~/.config/hypr/hypridle.conf
-        CHANGES_MADE+=("💻 Applied laptop hypridle config (with suspend)")
     elif [ -f configs/hypr/hypridle-desktop.conf ]; then
         backup_and_copy configs/hypr/hypridle-desktop.conf ~/.config/hypr/hypridle.conf
-        CHANGES_MADE+=("🖥️  Applied desktop hypridle config")
     fi
     
     # Copy all other hypr configs (except hypridle variants)
@@ -112,7 +106,6 @@ if [ -d configs/systemd ] && [ "$(ls -A configs/systemd)" ]; then
             TIMER_NAME=$(basename "$timer")
             systemctl --user enable "$TIMER_NAME" 2>/dev/null || true
             systemctl --user start "$TIMER_NAME" 2>/dev/null || true
-            CHANGES_MADE+=("⏰ Enabled: $TIMER_NAME")
         fi
     done
     
@@ -155,9 +148,12 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
     mkdir -p ~/.local/bin
     for file in scripts/bin/*; do
         if [ -f "$file" ]; then
-            cp "$file" ~/.local/bin/$(basename "$file")
-            chmod +x ~/.local/bin/$(basename "$file")
-            CHANGES_MADE+=("🔧 Installed: $(basename "$file")")
+            DEST=~/.local/bin/$(basename "$file")
+            if ! cp "$file" "$DEST" 2>/dev/null; then
+                echo "   ⚠️  Skipped $(basename "$file") (currently running)"
+            else
+                chmod +x "$DEST"
+            fi
         fi
     done
     echo "   → Custom binaries installed"
@@ -171,7 +167,14 @@ echo "🌐 Restoring web apps..."
 if [ -d webapps ] && [ "$(ls -A webapps/*.desktop 2>/dev/null)" ]; then
     mkdir -p ~/.local/share/applications
     for file in webapps/*.desktop; do
-        [ -f "$file" ] && backup_and_copy "$file" ~/.local/share/applications/$(basename "$file")
+        if [ -f "$file" ]; then
+            DEST=~/.local/share/applications/$(basename "$file")
+            if [ ! -f "$DEST" ]; then
+                cp "$file" "$DEST"
+            else
+                echo "   → Skipped $(basename "$file") (already installed)"
+            fi
+        fi
     done
     echo "   → Web apps installed"
 else
@@ -187,9 +190,12 @@ if [ -d themes ] && [ "$(ls -A themes)" ]; then
         if [ -d "$theme_dir" ]; then
             THEME_NAME=$(basename "$theme_dir")
             # Skip if it's a symlink in the config dir (system theme)
-            if [ ! -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
+            if [ -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
+                echo "   → Skipped $THEME_NAME (system theme)"
+            elif [ -d ~/.config/omarchy/themes/"$THEME_NAME" ]; then
+                echo "   → Skipped $THEME_NAME (already installed)"
+            else
                 cp -r "$theme_dir" ~/.config/omarchy/themes/
-                CHANGES_MADE+=("🎨 Installed theme: $THEME_NAME")
             fi
         fi
     done
@@ -198,25 +204,11 @@ else
     echo "   → No themes to install"
 fi
 
-# Summary
 echo
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Setup Complete!"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo
-
-if [ ${#CHANGES_MADE[@]} -gt 0 ]; then
-    echo "Changes made:"
-    for change in "${CHANGES_MADE[@]}"; do
-        echo "  $change"
-    done
-else
-    echo "No changes were needed - system already up to date!"
-fi
-
 echo
 echo "⚠️  MANUAL CONFIGURATION NEEDED:"
 echo "   • Edit ~/.config/hypr/monitor.conf to match your display setup"
 echo "   • Run 'hyprctl monitors' to see available monitors"
 echo
-echo "You may need to reload Hyprland (Super+Shift+R) or restart to see all changes."
+echo "You may need to restart to see all changes."
