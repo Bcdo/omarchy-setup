@@ -188,6 +188,16 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
             fi
         fi
     done
+    
+    # Ensure ~/.local/bin is in PATH
+    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+        echo "   → Adding ~/.local/bin to PATH in ~/.bashrc"
+        echo '' >> ~/.bashrc
+        echo '# Add ~/.local/bin to PATH for custom binaries' >> ~/.bashrc
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+    
     echo "   → Custom binaries installed"
 else
     echo "   → No custom binaries to install"
