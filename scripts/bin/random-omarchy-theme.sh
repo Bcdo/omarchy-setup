@@ -8,8 +8,8 @@ if [ ! -d "$THEMES_DIR" ]; then
   exit 1
 fi
 
-# load theme names into array
-mapfile -t THEMES < <(ls -1 "$THEMES_DIR")
+# load theme names into array (only actual directories, not broken symlinks)
+mapfile -t THEMES < <(find "$THEMES_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
 [ ${#THEMES[@]} -gt 0 ] || { echo "No themes found in $THEMES_DIR" >&2; exit 1; }
 
 # choose random
