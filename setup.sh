@@ -198,7 +198,7 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
         export PATH="$HOME/.local/bin:$PATH"
     fi
     
-    echo "   → Custom binaries installed"
+    echo "   → Custom binaries installed (PATH configured in Hyprland envs)"
 else
     echo "   → No custom binaries to install"
 fi
@@ -291,7 +291,9 @@ echo "⚠️  MANUAL CONFIGURATION NEEDED:"
 echo "   • Edit ~/.config/hypr/monitor.conf to match your display setup"
 echo "   • Run 'hyprctl monitors' to see available monitors"
 echo
-echo "You may need to restart to see all changes."
+echo "⚠️  TO APPLY ALL CHANGES:"
+echo "   • Log out and log back in, or run: hyprctl reload"
+echo "   • This is needed for Waybar to pick up the custom binaries (like Pomodoro)"
 
 # Check for slow AUR packages
 if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
