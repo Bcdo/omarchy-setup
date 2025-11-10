@@ -213,32 +213,42 @@ else
     echo "   → No web apps to install"
 fi
 
-# Install themes
+# Install themes from GitHub
 echo
 echo "🎨 Installing Omarchy themes..."
-if [ -d themes ] && [ "$(ls -A themes)" ]; then
+if [ -f theme-repos.txt ]; then
     mkdir -p ~/.config/omarchy/themes
     THEMES_INSTALLED=0
     THEMES_SKIPPED=0
-    for theme_dir in themes/*/; do
-        if [ -d "$theme_dir" ]; then
-            THEME_NAME=$(basename "$theme_dir")
-            # Skip if it's a symlink in the config dir (system theme)
-            if [ -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                ((THEMES_SKIPPED++)) || true
-            elif [ -d ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                ((THEMES_SKIPPED++)) || true
-            else
-                cp -r "$theme_dir" ~/.config/omarchy/themes/
+    
+    while IFS= read -r repo_url; do
+        # Skip empty lines and comments
+        [[ -z "$repo_url" || "$repo_url" =~ ^# ]] && continue
+        
+        # Extract theme name from repo URL
+        THEME_NAME=$(basename "$repo_url" .git)
+        # Remove common prefixes/suffixes
+        THEME_NAME=${THEME_NAME#omarchy-}
+        THEME_NAME=${THEME_NAME%-theme}
+        
+        THEME_PATH=~/.config/omarchy/themes/"$THEME_NAME"
+        
+        # Skip if already installed
+        if [ -d "$THEME_PATH" ]; then
+            ((THEMES_SKIPPED++)) || true
+        else
+            echo "   → Cloning $THEME_NAME..."
+            if git clone --depth 1 --quiet "$repo_url" "$THEME_PATH" 2>/dev/null; then
                 ((THEMES_INSTALLED++)) || true
+            else
+                echo "   ⚠️  Failed to clone $THEME_NAME"
             fi
         fi
-    done
-    if [ $THEMES_INSTALLED -gt 0 ] || [ $THEMES_SKIPPED -gt 0 ]; then
-        echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
-    fi
+    done < theme-repos.txt
+    
+    echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
 else
-    echo "   → No themes to install"
+    echo "   → No theme-repos.txt found, skipping theme installation"
 fi
 
 # Set Firefox as default browser
