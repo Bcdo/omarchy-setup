@@ -217,20 +217,23 @@ echo
 echo "🎨 Restoring Omarchy themes..."
 if [ -d themes ] && [ "$(ls -A themes)" ]; then
     mkdir -p ~/.config/omarchy/themes
+    THEMES_INSTALLED=0
+    THEMES_SKIPPED=0
     for theme_dir in themes/*/; do
         if [ -d "$theme_dir" ]; then
             THEME_NAME=$(basename "$theme_dir")
             # Skip if it's a symlink in the config dir (system theme)
             if [ -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                echo "   → Skipped $THEME_NAME (system theme)"
+                ((THEMES_SKIPPED++))
             elif [ -d ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                echo "   → Skipped $THEME_NAME (already installed)"
+                ((THEMES_SKIPPED++))
             else
                 cp -r "$theme_dir" ~/.config/omarchy/themes/
+                ((THEMES_INSTALLED++))
             fi
         fi
     done
-    echo "   → Themes installed"
+    echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
 else
     echo "   → No themes to install"
 fi
