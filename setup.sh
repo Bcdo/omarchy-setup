@@ -247,6 +247,9 @@ echo "🌐 Setting Firefox as default browser..."
 if command -v firefox &> /dev/null; then
     xdg-settings set default-web-browser firefox.desktop
     echo "   → Firefox set as default browser"
+elif command -v firefox-developer-edition &> /dev/null; then
+    xdg-settings set default-web-browser firefox-developer-edition.desktop
+    echo "   → Firefox Developer Edition set as default browser"
 else
     echo "   → Firefox not installed, skipping"
 fi
