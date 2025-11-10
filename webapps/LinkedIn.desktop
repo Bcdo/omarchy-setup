@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=LinkedIn
+Comment=LinkedIn
+Exec=omarchy-launch-webapp https://www.linkedin.com/feed/
+Terminal=false
+Type=Application
+Icon=/home/bcdo/.local/share/applications/icons/LinkedIn.png
+StartupNotify=true
