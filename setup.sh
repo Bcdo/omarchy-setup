@@ -237,11 +237,11 @@ if [ -f theme-repos.txt ]; then
         if [ -d "$THEME_PATH" ]; then
             ((THEMES_SKIPPED++)) || true
         else
-            echo "   → Cloning $THEME_NAME..."
+            echo "   → Installing $THEME_NAME..."
             if git clone --depth 1 --quiet "$repo_url" "$THEME_PATH" 2>/dev/null; then
                 ((THEMES_INSTALLED++)) || true
             else
-                echo "   ⚠️  Failed to clone $THEME_NAME"
+                echo "   ⚠️  Failed to install $THEME_NAME"
             fi
         fi
     done < theme-repos.txt
