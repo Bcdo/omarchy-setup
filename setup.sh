@@ -274,6 +274,16 @@ else
     echo "   → Firefox not installed, skipping"
 fi
 
+# Restart Waybar if running
+echo
+echo "🔄 Restarting Waybar..."
+if pgrep -x waybar > /dev/null; then
+    killall waybar
+    echo "   → Waybar restarted (will be relaunched by Hyprland)"
+else
+    echo "   → Waybar not running, skipping restart"
+fi
+
 echo
 echo "✅ Setup Complete!"
 echo
