@@ -17,15 +17,19 @@ This repository manages personal configuration and customizations for an Omarchy
 This is the primary command. It:
 - Installs missing pacman packages from `packages.txt`
 - Installs missing AUR packages from `aur-packages.txt` (using `yay`)
+- Prompts for slow-building AUR packages from `aur-packages-slow.txt` (optional, with per-package confirmation)
 - Restores Hyprland configs to `~/.config/hypr/`
 - Restores Waybar configs to `~/.config/waybar/`
+- Restores Mako notification daemon config to `~/.config/mako/`
+- Restores Neovim configs to `~/.config/nvim/` (LazyVim extras, plugins, snippets)
 - Installs custom binaries to `~/.local/bin/`
 - Installs systemd user services/timers to `~/.config/systemd/user/`
 - Restores custom Omarchy themes to `~/.config/omarchy/themes/`
 - Installs webapp .desktop files to `~/.local/share/applications/`
+- Sets Firefox as the default browser (if installed)
 - Creates timestamped backups (`.bak.YYYY-MM-DD_HH-MM-SS`) before overwriting files
 
-**Interactive prompts**: The script asks whether the system is a laptop or desktop to deploy the appropriate `hypridle` configuration variant.
+**Interactive prompts**: The script asks whether the system is a laptop or desktop to deploy the appropriate `hypridle` configuration variant. It also prompts before installing slow-building AUR packages, allowing you to confirm each package individually since they can take a very long time to compile.
 
 ### Test package installation (dry run)
 ```bash
@@ -59,11 +63,17 @@ configs/
   waybar/                  # Status bar configuration
     config.jsonc           # Module configuration
     style.css              # Styling
+  mako/                    # Notification daemon config
+    config                 # Custom notification styling (Pomodoro)
+  nvim/                    # Neovim customizations
+    lazyvim.json           # LazyVim extras configuration
+    lua/plugins/           # Custom plugin configs (surround)
+    snippets/              # Custom code snippets (C#, etc.)
   systemd/                 # User systemd services and timers
 scripts/
   bin/                     # Custom executables (installed to ~/.local/bin)
     waybar-module-pomodoro # Compiled binary for Pomodoro timer module
-themes/                    # Custom Omarchy themes (29 themes)
+themes/                    # Custom Omarchy themes (30 themes)
   aetheria/                # Example theme directory
   crimson-gold/
   cyberpunk/
@@ -71,6 +81,7 @@ themes/                    # Custom Omarchy themes (29 themes)
 webapps/                   # .desktop files for web applications
 packages.txt               # Official Arch packages
 aur-packages.txt           # AUR packages
+aur-packages-slow.txt      # AUR packages that take longer to build
 setup.sh                   # Main restore script
 ```
 
@@ -101,8 +112,9 @@ setup.sh                   # Main restore script
 ## Development Workflow
 
 ### Adding a new package
-1. Add package name to `packages.txt` (for official repos) or `aur-packages.txt` (for AUR)
+1. Add package name to `packages.txt` (for official repos), `aur-packages.txt` (for AUR), or `aur-packages-slow.txt` (for slow-building AUR packages)
 2. Run `./setup.sh` to install
+3. Slow-building packages will prompt for confirmation before installation
 
 ### Adding a new config file
 1. Create the file in the appropriate `configs/` subdirectory

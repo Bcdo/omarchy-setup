@@ -43,6 +43,7 @@ The script will first ask if this is a laptop or desktop (for `hypridle` configu
 
 - Install missing packages from `packages.txt` (official repos)
 - Install missing AUR packages from `aur-packages.txt`
+- Prompt for slow-building AUR packages from `aur-packages-slow.txt` (optional, per-package confirmation)
 - Apply Hyprland configs to `~/.config/hypr/` (keybindings, idle behavior, etc.)
 - Apply Waybar config to `~/.config/waybar/` (custom clock format + Pomodoro timer module)
 - Apply Mako config to `~/.config/mako/` (notification styling, including Pomodoro timer notifications)
@@ -51,6 +52,7 @@ The script will first ask if this is a laptop or desktop (for `hypridle` configu
 - Install systemd daily theme randomizer timer to `~/.config/systemd/user/`
 - Install custom Omarchy themes to `~/.config/omarchy/themes/`
 - Install webapp .desktop files to `~/.local/share/applications/`
+- Set Firefox as the default browser (if installed)
 - Create timestamped backups before overwriting existing files
 
 ### Test What Would Be Installed

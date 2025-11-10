@@ -25,13 +25,13 @@ backup_and_copy() {
     cp "$src" "$dest"
 }
 
-echo "=== Omarchy Setup Restore ==="
+echo "=== Omarchy Setup ==="
 echo
 
 # Ask about machine type upfront (before installations)
 MACHINE_TYPE="desktop"
 if [ -f configs/hypr/hypridle-desktop.conf ] || [ -f configs/hypr/hypridle-laptop.conf ]; then
-    read -p "Is this a laptop or desktop? (l/d): " machine_type_input
+  read -p "Is this a (l)aptop or (d)esktop? (l/d): " machine_type_input
     case "$machine_type_input" in
         l|L|laptop)
             MACHINE_TYPE="laptop"
@@ -66,9 +66,10 @@ if [ -f aur-packages.txt ] && [ -s aur-packages.txt ]; then
     fi
 fi
 
-# Restore Hyprland config
+
+# Install Hyprland config
 echo
-echo "⌨️  Restoring Hyprland configuration..."
+echo "⌨️  Installing Hyprland configuration..."
 if [ -d configs/hypr ] && [ "$(ls -A configs/hypr)" ]; then
     mkdir -p ~/.config/hypr
     
@@ -91,9 +92,9 @@ else
     echo "   → No Hyprland config to apply"
 fi
 
-# Restore systemd services/timers
+# Install systemd services/timers
 echo
-echo "⏰ Restoring systemd services and timers..."
+echo "⏰ Installing systemd services and timers..."
 if [ -d configs/systemd ] && [ "$(ls -A configs/systemd)" ]; then
     mkdir -p ~/.config/systemd/user
     for file in configs/systemd/*; do
@@ -115,9 +116,9 @@ else
     echo "   → No systemd configs to apply"
 fi
 
-# Restore Waybar config
+# Install Waybar config
 echo
-echo "📊 Restoring Waybar configuration..."
+echo "📊 Installing Waybar configuration..."
 if [ -d configs/waybar ] && [ "$(ls -A configs/waybar)" ]; then
     mkdir -p ~/.config/waybar
     for file in configs/waybar/*; do
@@ -128,9 +129,9 @@ else
     echo "   → No Waybar config to apply"
 fi
 
-# Restore mako config
+# Install mako config
 echo
-echo "🔔 Restoring mako notification configuration..."
+echo "🔔 Installing mako notification configuration..."
 if [ -f configs/mako/config ]; then
     mkdir -p ~/.config/mako
     # Remove the existing symlink if it exists
@@ -141,9 +142,9 @@ else
     echo "   → No mako config to apply"
 fi
 
-# Restore nvim config
+# Install nvim config
 echo
-echo "✏️  Restoring Neovim configuration..."
+echo "✏️  Installing Neovim configuration..."
 if [ -d configs/nvim ]; then
     # Restore lazyvim.json (extras configuration)
     if [ -f configs/nvim/lazyvim.json ]; then
@@ -172,9 +173,9 @@ else
     echo "   → No nvim config to apply"
 fi
 
-# Restore custom binaries (pomodoro module, etc.)
+# Install custom binaries (pomodoro module, etc.)
 echo
-echo "🔧 Restoring custom binaries..."
+echo "🔧 Installing custom binaries..."
 if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
     mkdir -p ~/.local/bin
     for file in scripts/bin/*; do
@@ -192,9 +193,9 @@ else
     echo "   → No custom binaries to install"
 fi
 
-# Restore webapps (.desktop files)
+# Install webapps (.desktop files)
 echo
-echo "🌐 Restoring web apps..."
+echo "🌐 Installing web apps..."
 if [ -d webapps ] && [ "$(ls -A webapps/*.desktop 2>/dev/null)" ]; then
     mkdir -p ~/.local/share/applications
     for file in webapps/*.desktop; do
@@ -212,9 +213,9 @@ else
     echo "   → No web apps to install"
 fi
 
-# Restore themes
+# Install themes
 echo
-echo "🎨 Restoring Omarchy themes..."
+echo "🎨 Installing Omarchy themes..."
 if [ -d themes ] && [ "$(ls -A themes)" ]; then
     mkdir -p ~/.config/omarchy/themes
     THEMES_INSTALLED=0
@@ -224,18 +225,30 @@ if [ -d themes ] && [ "$(ls -A themes)" ]; then
             THEME_NAME=$(basename "$theme_dir")
             # Skip if it's a symlink in the config dir (system theme)
             if [ -L ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                ((THEMES_SKIPPED++))
+                ((THEMES_SKIPPED++)) || true
             elif [ -d ~/.config/omarchy/themes/"$THEME_NAME" ]; then
-                ((THEMES_SKIPPED++))
+                ((THEMES_SKIPPED++)) || true
             else
                 cp -r "$theme_dir" ~/.config/omarchy/themes/
-                ((THEMES_INSTALLED++))
+                ((THEMES_INSTALLED++)) || true
             fi
         fi
     done
-    echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
+    if [ $THEMES_INSTALLED -gt 0 ] || [ $THEMES_SKIPPED -gt 0 ]; then
+        echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
+    fi
 else
     echo "   → No themes to install"
+fi
+
+# Set Firefox as default browser
+echo
+echo "🌐 Setting Firefox as default browser..."
+if command -v firefox &> /dev/null; then
+    xdg-settings set default-web-browser firefox.desktop
+    echo "   → Firefox set as default browser"
+else
+    echo "   → Firefox not installed, skipping"
 fi
 
 echo
@@ -246,3 +259,19 @@ echo "   • Edit ~/.config/hypr/monitor.conf to match your display setup"
 echo "   • Run 'hyprctl monitors' to see available monitors"
 echo
 echo "You may need to restart to see all changes."
+
+# Check for slow AUR packages
+if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
+    MISSING_SLOW_AUR=$(comm -23 <(sort aur-packages-slow.txt) <(yay -Qq | sort))
+    if [ -n "$MISSING_SLOW_AUR" ]; then
+        echo
+        echo "📦 Slow-building AUR packages available"
+        read -p "Do you want to install slow-building AUR packages now? (y/n): " install_slow
+        
+        if [[ "$install_slow" =~ ^[Yy]$ ]]; then
+            "$SCRIPT_DIR/install-slow-packages.sh"
+        else
+            echo "   → Skipped. Run './install-slow-packages.sh' anytime to install them."
+        fi
+    fi
+fi
