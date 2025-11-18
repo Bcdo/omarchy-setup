@@ -80,8 +80,10 @@ journalctl --user -u random-omarchy-theme.service
 The Pomodoro timer sends notifications styled via `configs/mako/config`. To customize:
 
 1. Edit `~/.config/mako/config` (or `configs/mako/config` in this repo)
-2. Modify the `[summary="🍅 Pomodoro Timer"]` section (size, font, position, etc.)
-3. Reload mako: `makoctl reload`
+2. Modify the `[summary="Pomodoro"]` section (size, font, position, etc.)
+3. Reload mako: `pkill -HUP mako`
+
+**Note**: The `waybar-module-pomodoro` binary in `scripts/bin/` has been customized with modified notification messages. It is not the stock version from the original project.
 
 ### Neovim Customizations
 
