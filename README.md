@@ -102,8 +102,13 @@ This setup includes custom Neovim configurations on top of Omarchy's base nvim s
 
 These configs are applied to `~/.config/nvim/`.
 
+## Compatibility Notes
+
+### Hyprland 0.53+
+The `scrolltouchpad` windowrule has been deprecated and removed in Hyprland 0.53+. The configuration in this repository has been updated to comment out these rules. If you're using an older version of Hyprland (< 0.53), you can uncomment these lines in `configs/hypr/input.conf`.
+
 ## Notes
 
 - **Backups**: All replaced files get timestamped backups: `filename.bak.YYYY-MM-DD_HH-MM-SS`
 - **Manual config needed**: After setup, edit `~/.config/hypr/monitors.conf` for your displays (use `hyprctl monitors` to see available displays)
-- **Reload required**: You may need to reload Hyprland (`Super+Shift+R`) or restart to see changes
+- **Reload required**: You may need to reload Hyprland (`Super+Shift+R` or `hyprctl reload`) or restart to see changes

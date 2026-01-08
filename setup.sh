@@ -66,6 +66,28 @@ if [ -f aur-packages.txt ] && [ -s aur-packages.txt ]; then
     fi
 fi
 
+# Install missing npm packages
+if [ -f npm-packages.txt ] && [ -s npm-packages.txt ]; then
+    echo
+    echo "📦 Installing npm packages..."
+    if command -v npm &> /dev/null; then
+        while IFS= read -r package; do
+            # Skip empty lines and comments
+            [[ -z "$package" || "$package" =~ ^# ]] && continue
+            
+            # Check if package is already installed globally
+            if npm list -g "$package" &> /dev/null; then
+                echo "   → $package already installed"
+            else
+                echo "   → Installing $package..."
+                npm install -g "$package"
+            fi
+        done < npm-packages.txt
+    else
+        echo "   ⚠️  npm not found. Install Node.js/npm first."
+    fi
+fi
+
 
 # Install Hyprland config
 echo
