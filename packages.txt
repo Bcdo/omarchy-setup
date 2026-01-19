@@ -2,3 +2,10 @@ firefox-developer-edition
 qbittorrent
 qemu-full
 virt-manager
+texlive-basic
+texlive-bin
+texlive-binextra
+texlive-latex
+texlive-latexrecommended
+zathura
+zathura-pdf-poppler

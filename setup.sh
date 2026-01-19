@@ -174,6 +174,15 @@ if [ -d configs/nvim ]; then
         echo "   → LazyVim extras configuration applied"
     fi
     
+    # Restore config files
+    if [ -d configs/nvim/lua/config ] && [ "$(ls -A configs/nvim/lua/config)" ]; then
+        mkdir -p ~/.config/nvim/lua/config
+        for file in configs/nvim/lua/config/*; do
+            [ -f "$file" ] && backup_and_copy "$file" ~/.config/nvim/lua/config/$(basename "$file")
+        done
+        echo "   → Custom config files applied"
+    fi
+    
     # Restore plugin configs
     if [ -d configs/nvim/lua/plugins ] && [ "$(ls -A configs/nvim/lua/plugins)" ]; then
         mkdir -p ~/.config/nvim/lua/plugins

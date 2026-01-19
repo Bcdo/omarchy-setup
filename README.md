@@ -21,6 +21,7 @@ omarchy-setup/
 │   ├── mako/                 # Notification daemon config
 │   │   └── config
 │   ├── nvim/                 # Neovim customizations
+│   │   ├── lua/config/        # Custom config files (options.lua)
 │   │   ├── lua/plugins/       # Custom plugin configs
 │   │   └── snippets/          # Custom code snippets
 │   └── systemd/              # Custom systemd services/timers
@@ -94,9 +95,14 @@ This setup includes custom Neovim configurations on top of Omarchy's base nvim s
   - Coding: mini-surround, yanky (clipboard manager)
   - Editor: neo-tree (file explorer)
   - Formatting: Prettier
-  - Languages: Astro, C#/.NET, Git, JSON, Markdown, Python, Tailwind, TypeScript, Vue
+  - Languages: Astro, C#/.NET, Git, JSON, LaTeX, Markdown, Python, Tailwind, TypeScript, Vue
   - Linting: ESLint
   - Utils: mini-hipatterns
+- **LaTeX Support**: Configured with VimTeX and TexLab LSP
+  - PDF viewer: Zathura with bi-directional sync (`zathura_simple` method)
+  - Compile with `\ll`, view with `\lv`, stop with `\lk`
+  - Requires: `texlive-latex`, `texlive-latexrecommended`, `zathura-pdf-poppler`
+  - **Post-install**: After first LaTeX package installation, run `fmtutil-user --all` to regenerate format files
 - **Custom Surround**: Added `sac` keybinding to surround text with `{{ }}` (double curly braces with spaces)
 - **Custom Snippets**: C# snippets in `configs/nvim/snippets/cs.json`
 
