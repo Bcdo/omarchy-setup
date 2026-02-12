@@ -8,7 +8,7 @@ Personal setup for Omarchy Linux. Run `./setup.sh` to deploy configs to a new sy
 ./setup.sh
 ```
 
-The script installs packages, deploys configs, and sets up systemd timers. It prompts for laptop vs desktop (for hypridle config) and optionally installs slow-building AUR packages and run a [debloat script](https://github.com/DanielCoffey1/a-la-carchy).
+The script installs packages, deploys configs, and sets up systemd timers. It prompts for laptop vs desktop (for hypridle config) and optionally installs slow-building AUR packages and debloats inspired by [debloat script](https://github.com/DanielCoffey1/a-la-carchy).
 
 ## Structure
 

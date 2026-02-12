@@ -3,6 +3,13 @@
 # Omarchy Setup - Restore Script
 # Restores configuration from this repository to the system
 
+# Check if running as root
+if [[ $EUID -eq 0 ]]; then
+    echo "Error: Do not run this script as root!"
+    echo "The script will ask for sudo password when needed."
+    exit 1
+fi
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,6 +33,54 @@ backup_and_copy() {
 }
 
 echo "=== Omarchy Setup ==="
+echo
+
+# Remove unwanted packages (debloat)
+echo "🗑️  Removing unwanted packages..."
+if [ -f remove-packages.txt ]; then
+    PKGS_TO_REMOVE=""
+    while IFS= read -r pkg; do
+        # Skip empty lines and comments
+        [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
+        # Check if package is installed
+        if pacman -Qi "$pkg" &>/dev/null; then
+            PKGS_TO_REMOVE="$PKGS_TO_REMOVE $pkg"
+        fi
+    done < remove-packages.txt
+    
+    if [ -n "$PKGS_TO_REMOVE" ]; then
+        sudo pacman -Rns --noconfirm $PKGS_TO_REMOVE
+        echo "   → Removed:$PKGS_TO_REMOVE"
+    else
+        echo "   → No packages to remove (already uninstalled)"
+    fi
+else
+    echo "   → No remove-packages.txt found, skipping"
+fi
+
+# Remove unwanted webapps
+echo
+echo "🗑️  Removing unwanted webapps..."
+if [ -f remove-webapps.txt ]; then
+    REMOVED_COUNT=0
+    while IFS= read -r webapp; do
+        # Skip empty lines and comments
+        [[ -z "$webapp" || "$webapp" =~ ^# ]] && continue
+        DESKTOP_FILE="$HOME/.local/share/applications/$webapp.desktop"
+        if [ -f "$DESKTOP_FILE" ]; then
+            rm "$DESKTOP_FILE"
+            ((REMOVED_COUNT++)) || true
+        fi
+    done < remove-webapps.txt
+    
+    if [ $REMOVED_COUNT -gt 0 ]; then
+        echo "   → Removed $REMOVED_COUNT webapp(s)"
+    else
+        echo "   → No webapps to remove (already uninstalled)"
+    fi
+else
+    echo "   → No remove-webapps.txt found, skipping"
+fi
 echo
 
 # Ask about machine type upfront (before installations)
@@ -342,14 +397,44 @@ if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
     fi
 fi
 
-# Offer to run debloat script
+# Enable media directories (screenshots/recordings in subdirs)
 echo
-echo "🧹 Debloat and Optimization"
-read -p "Do you want to run the a-la-carchy debloat script? (y/n): " run_debloat
-
-if [[ "$run_debloat" =~ ^[Yy]$ ]]; then
-    echo "   → Running a-la-carchy script..."
-    bash <(curl -fsSL https://raw.githubusercontent.com/DanielCoffey1/a-la-carchy/master/a-la-carchy.sh)
+echo "📁 Configuring media directories..."
+UWSM_DEFAULT="$HOME/.config/uwsm/default"
+if [ -f "$UWSM_DEFAULT" ]; then
+    # Create the directories
+    mkdir -p "$HOME/Pictures/Screenshots"
+    mkdir -p "$HOME/Videos/Screencasts"
+    
+    # Uncomment the export lines if they exist and are commented
+    if grep -q '^#.*export OMARCHY_SCREENSHOT_DIR=' "$UWSM_DEFAULT"; then
+        sed -i 's/^# *\(export OMARCHY_SCREENSHOT_DIR=.*\)/\1/' "$UWSM_DEFAULT"
+        sed -i 's/^# *\(export OMARCHY_SCREENRECORD_DIR=.*\)/\1/' "$UWSM_DEFAULT"
+        echo "   → Media directories enabled (Screenshots → ~/Pictures/Screenshots)"
+    elif grep -q '^export OMARCHY_SCREENSHOT_DIR=' "$UWSM_DEFAULT"; then
+        echo "   → Media directories already enabled"
+    else
+        # Add the lines if they don't exist
+        echo '' >> "$UWSM_DEFAULT"
+        echo 'export OMARCHY_SCREENSHOT_DIR="$HOME/Pictures/Screenshots"' >> "$UWSM_DEFAULT"
+        echo 'export OMARCHY_SCREENRECORD_DIR="$HOME/Videos/Screencasts"' >> "$UWSM_DEFAULT"
+        echo "   → Media directories configured"
+    fi
 else
-    echo "   → Skipped debloat script"
+    echo "   → uwsm config not found, skipping media directories"
 fi
+
+# Cleanup: remove orphaned packages and clear cache
+echo
+echo "🧹 Cleaning up..."
+ORPHANS=$(pacman -Qdtq 2>/dev/null)
+if [ -n "$ORPHANS" ]; then
+    echo "$ORPHANS" | sudo pacman -Rns --noconfirm - 2>/dev/null || true
+    echo "   → Removed orphaned packages"
+else
+    echo "   → No orphaned packages"
+fi
+
+# Clear package cache (keep only latest version)
+yay -Sc --noconfirm 2>/dev/null || true
+echo "   → Cleared package cache"

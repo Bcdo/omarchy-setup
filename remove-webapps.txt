@@ -1,0 +1,9 @@
+# Webapps to remove from stock Omarchy
+# These are .desktop file names (without .desktop extension)
+Basecamp
+HEY
+Zoom
+Google Contacts
+Google Maps
+Google Messages
+Google Photos
