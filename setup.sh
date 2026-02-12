@@ -341,3 +341,15 @@ if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
         fi
     fi
 fi
+
+# Offer to run debloat script
+echo
+echo "🧹 Debloat and Optimization"
+read -p "Do you want to run the a-la-carchy debloat script? (y/n): " run_debloat
+
+if [[ "$run_debloat" =~ ^[Yy]$ ]]; then
+    echo "   → Running a-la-carchy script..."
+    bash <(curl -fsSL https://raw.githubusercontent.com/DanielCoffey1/a-la-carchy/master/a-la-carchy.sh)
+else
+    echo "   → Skipped debloat script"
+fi
