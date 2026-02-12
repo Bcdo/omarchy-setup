@@ -35,3 +35,4 @@ https://github.com/euandeas/omarchy-flexoki-dark-theme.git
 https://github.com/rondilley/omarchy-himalaya-theme.git
 https://github.com/abhijeet-swami/omarchy-spectra-theme.git
 https://github.com/lavarinimoreira/omarchy-vice-city-theme.git
+https://github.com/atif-1402/omarchy-amekoji-theme.git
