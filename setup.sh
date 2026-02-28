@@ -35,6 +35,13 @@ backup_and_copy() {
 echo "=== Omarchy Setup ==="
 echo
 
+# Update Omarchy first (ensures fresh package databases and applies migrations)
+read -p "Run omarchy-update first? (recommended) (y/n): " do_update
+if [[ "$do_update" =~ ^[Yy]$ ]]; then
+    omarchy-update -y
+    echo
+fi
+
 # Remove unwanted packages (debloat)
 echo "🗑️  Removing unwanted packages..."
 if [ -f remove-packages.txt ]; then
@@ -143,6 +150,35 @@ if [ -f npm-packages.txt ] && [ -s npm-packages.txt ]; then
     fi
 fi
 
+
+# Install and configure TLP (laptop battery management)
+if [ "$MACHINE_TYPE" = "laptop" ]; then
+    echo
+    echo "🔋 Installing TLP battery management..."
+
+    # Install TLP packages
+    sudo pacman -S --needed --noconfirm tlp tlp-rdw
+
+    # Enable TLP service
+    sudo systemctl enable tlp.service
+
+    # Enable NetworkManager dispatcher (required for tlp-rdw Radio Device Wizard)
+    sudo systemctl enable NetworkManager-dispatcher.service
+
+    # Mask conflicting services
+    sudo systemctl mask systemd-rfkill.service systemd-rfkill.socket
+
+    # Configure charge thresholds in /etc/tlp.conf
+    sudo sed -i 's/^#\s*START_CHARGE_THRESH_BAT0=.*/START_CHARGE_THRESH_BAT0=20/' /etc/tlp.conf
+    sudo sed -i 's/^#\s*STOP_CHARGE_THRESH_BAT0=.*/STOP_CHARGE_THRESH_BAT0=85/' /etc/tlp.conf
+
+    # Start TLP immediately and show battery status
+    sudo tlp start
+    echo "   → TLP installed and configured (charge thresholds: 20%-85%)"
+    echo
+    echo "   🔋 Battery status:"
+    sudo tlp-stat -b
+fi
 
 # Install Hyprland config
 echo
