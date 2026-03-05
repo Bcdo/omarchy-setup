@@ -279,6 +279,12 @@ else
     echo "   → No nvim config to apply"
 fi
 
+# Sync Neovim treesitter parsers (prevents query errors from version mismatches)
+echo "   → Updating treesitter parsers..."
+nvim --headless "+TSUpdateSync" +qa 2>/dev/null && \
+    echo "   → Treesitter parsers updated" || \
+    echo "   ⚠️  Treesitter update skipped (run :TSUpdate manually in nvim)"
+
 # Install custom binaries (pomodoro module, etc.)
 echo
 echo "🔧 Installing custom binaries..."
