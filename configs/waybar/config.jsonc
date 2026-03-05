@@ -62,8 +62,8 @@
     "on-click": "$TERMINAL -e btop",
   },
   "clock": {
-    "format": "{:L%A %H:%M - %d %B W%V %Y}",
-    "format-alt": "{:L%d %B W%V %Y}",
+"format": "{:L%A %H:%M - %d %B %Y W%V}",
+    "format-alt": "{:L%d %B %Y W%V}",
     "tooltip": false,
     "on-click-right": "omarchy-launch-floating-terminal-with-presentation omarchy-tz-select",
   },
