@@ -2,7 +2,7 @@
 include=~/.config/omarchy/current/theme/mako.ini
 
 # Custom styling for Pomodoro notifications
-[summary="Pomodoro"]
+[summary~="Pomodoro"]
 font=CaskaydiaMono Nerd Font 18
 width=600
 height=200
