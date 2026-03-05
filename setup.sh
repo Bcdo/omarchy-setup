@@ -295,16 +295,18 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
         fi
     done
     
-    # Ensure ~/.local/bin is in PATH
-    if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-        echo "   → Adding ~/.local/bin to PATH in ~/.bashrc"
-        echo '' >> ~/.bashrc
-        echo '# Add ~/.local/bin to PATH for custom binaries' >> ~/.bashrc
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-        export PATH="$HOME/.local/bin:$PATH"
+    # Ensure ~/.local/bin is in session PATH (for Hyprland/waybar to find custom binaries)
+    UWSM_DEFAULT="$HOME/.config/uwsm/default"
+    if [ -f "$UWSM_DEFAULT" ]; then
+        if ! grep -q 'export PATH="\$HOME/.local/bin' "$UWSM_DEFAULT"; then
+            echo '' >> "$UWSM_DEFAULT"
+            echo '# Add ~/.local/bin to PATH for custom binaries (e.g., waybar-module-pomodoro)' >> "$UWSM_DEFAULT"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$UWSM_DEFAULT"
+            echo "   → Added ~/.local/bin to session PATH (uwsm/default)"
+        fi
     fi
     
-    echo "   → Custom binaries installed (PATH configured in Hyprland envs)"
+    echo "   → Custom binaries installed"
 else
     echo "   → No custom binaries to install"
 fi
