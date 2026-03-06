@@ -175,6 +175,20 @@ else
     echo "   → No Hyprland config to apply"
 fi
 
+# Install battery charge thresholds (laptop only)
+if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/udev/99-battery-thresholds.rules ]; then
+    echo
+    echo "🔋 Installing battery charge thresholds..."
+    if [ ! -f /etc/udev/rules.d/99-battery-thresholds.rules ] || \
+       ! diff -q configs/udev/99-battery-thresholds.rules /etc/udev/rules.d/99-battery-thresholds.rules &>/dev/null; then
+        sudo cp configs/udev/99-battery-thresholds.rules /etc/udev/rules.d/99-battery-thresholds.rules
+        sudo udevadm control --reload-rules
+        echo "   → Battery thresholds set (start: 20%, stop: 90%)"
+    else
+        echo "   → Battery thresholds already configured"
+    fi
+fi
+
 # Install systemd services/timers
 echo
 echo "⏰ Installing systemd services and timers..."
