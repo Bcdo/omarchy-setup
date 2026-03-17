@@ -1,3 +1,2 @@
 jetbrains-toolbox
-plex-media-server
 warp-terminal-bin
