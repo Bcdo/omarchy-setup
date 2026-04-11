@@ -1,3 +1,5 @@
 firefox-developer-edition
 qemu-full
 virt-manager
+dnsmasq
+virt-viewer
