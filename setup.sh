@@ -183,7 +183,7 @@ if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/udev/99-battery-thresholds.rul
        ! diff -q configs/udev/99-battery-thresholds.rules /etc/udev/rules.d/99-battery-thresholds.rules &>/dev/null; then
         sudo cp configs/udev/99-battery-thresholds.rules /etc/udev/rules.d/99-battery-thresholds.rules
         sudo udevadm control --reload-rules
-        echo "   → Battery thresholds set (start: 20%, stop: 90%)"
+        echo "   → Battery thresholds set (start: 40%, stop: 80%)"
     else
         echo "   → Battery thresholds already configured"
     fi
@@ -373,6 +373,15 @@ if [ -f theme-repos.txt ]; then
     echo "   → Installed $THEMES_INSTALLED theme(s), skipped $THEMES_SKIPPED already installed"
 else
     echo "   → No theme-repos.txt found, skipping theme installation"
+fi
+
+# Offer to update installed themes
+if [ -d ~/.config/omarchy/themes ] && [ "$(ls -A ~/.config/omarchy/themes 2>/dev/null)" ]; then
+    echo
+    read -p "Update installed themes? (recommended) (y/n): " do_theme_update
+    if [[ "$do_theme_update" =~ ^[Yy]$ ]]; then
+        omarchy-theme-update
+    fi
 fi
 
 # Set Firefox as default browser
