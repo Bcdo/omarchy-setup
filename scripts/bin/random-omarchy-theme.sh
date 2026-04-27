@@ -21,6 +21,31 @@ echo "Switching Omarchy theme → $CHOICE"
 # Preferred: use omarchy helper if available (runs additional hooks)
 if command -v omarchy-theme-set >/dev/null 2>&1; then
   omarchy-theme-set "$CHOICE"
+
+  THEME_BACKGROUNDS_PATH="$HOME/.config/omarchy/current/theme/backgrounds/"
+  USER_BACKGROUNDS_PATH="$HOME/.config/omarchy/backgrounds/$CHOICE/"
+  CURRENT_BACKGROUND_LINK="$HOME/.config/omarchy/current/background"
+
+  mapfile -d '' -t BACKGROUNDS < <(
+    find -L "$USER_BACKGROUNDS_PATH" "$THEME_BACKGROUNDS_PATH" \
+      -maxdepth 1 \
+      -type f \
+      -print0 2>/dev/null | sort -z
+  )
+
+  if (( ${#BACKGROUNDS[@]} > 0 )); then
+    NEW_BACKGROUND="${BACKGROUNDS[$(( RANDOM % ${#BACKGROUNDS[@]} ))]}"
+
+    CURRENT_BACKGROUND=""
+    [[ -L "$CURRENT_BACKGROUND_LINK" ]] && CURRENT_BACKGROUND=$(readlink "$CURRENT_BACKGROUND_LINK")
+
+    if [[ "$NEW_BACKGROUND" != "$CURRENT_BACKGROUND" ]]; then
+      ln -nsf "$NEW_BACKGROUND" "$CURRENT_BACKGROUND_LINK"
+      pkill -x swaybg 2>/dev/null || true
+      setsid uwsm-app -- swaybg -i "$CURRENT_BACKGROUND_LINK" -m fill >/dev/null 2>&1 &
+    fi
+  fi
+
   exit 0
 fi
 

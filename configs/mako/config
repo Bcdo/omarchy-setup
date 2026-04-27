@@ -11,3 +11,14 @@ border-size=4
 default-timeout=0
 anchor=center
 group-by=summary
+
+# Custom styling for low battery notifications
+[summary~="recharge"]
+font=CaskaydiaMono Nerd Font 18
+width=600
+height=200
+padding=40
+border-size=4
+default-timeout=0
+anchor=center
+group-by=summary

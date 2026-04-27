@@ -19,6 +19,10 @@ The script installs packages, deploys configs, and sets up systemd timers. It pr
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
 
+## QEMU / Virt-Manager Setup
+
+See [VM-SETUP.md](VM-SETUP.md) for the full guide on setting up QEMU, virt-manager, and Kali Linux VMs.
+
 ## Notes
 
 - Backups are created as `filename.bak.YYYY-MM-DD_HH-MM-SS` before overwriting
