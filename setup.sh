@@ -239,6 +239,17 @@ else
     echo "   → No mako config to apply"
 fi
 
+# Install omarchy branding
+echo
+echo "🎨 Installing Kodesmien screensaver branding..."
+if [ -f configs/omarchy/branding/screensaver.txt ]; then
+    mkdir -p ~/.config/omarchy/branding
+    backup_and_copy configs/omarchy/branding/screensaver.txt ~/.config/omarchy/branding/screensaver.txt
+    echo "   → Screensaver branding applied"
+else
+    echo "   → No branding config to apply"
+fi
+
 # Install nvim config
 echo
 echo "✏️  Installing Neovim configuration..."
