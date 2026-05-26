@@ -28,12 +28,12 @@ echo "$MISSING_SLOW_AUR"
 echo
 
 PACKAGES_TO_INSTALL=()
-while IFS= read -r pkg; do
+while IFS= read -r pkg <&3; do
     read -p "Install $pkg? (y/n): " confirm_pkg
     if [[ "$confirm_pkg" =~ ^[Yy]$ ]]; then
         PACKAGES_TO_INSTALL+=("$pkg")
     fi
-done <<< "$MISSING_SLOW_AUR"
+done 3<<< "$MISSING_SLOW_AUR"
 
 if [ ${#PACKAGES_TO_INSTALL[@]} -eq 0 ]; then
     echo "   → No packages selected for installation"

@@ -445,6 +445,17 @@ if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
     fi
 fi
 
+# Optional: Android / Expo development setup
+if [ -f scripts/setup-android.sh ]; then
+    echo
+    read -p "Set up Android / Expo development environment? (y/n): " setup_android
+    if [[ "$setup_android" =~ ^[Yy]$ ]]; then
+        "$SCRIPT_DIR/scripts/setup-android.sh"
+    else
+        echo "   → Skipped. Run './scripts/setup-android.sh' anytime to set it up."
+    fi
+fi
+
 # Enable media directories (screenshots/recordings in subdirs)
 echo
 echo "📁 Configuring media directories..."

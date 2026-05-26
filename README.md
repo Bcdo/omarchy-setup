@@ -19,6 +19,16 @@ The script installs packages, deploys configs, and sets up systemd timers. It pr
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
 
+## Android / Expo Development
+
+Optional setup for React Native / Expo development. Run standalone or choose it during `setup.sh`:
+
+```bash
+./scripts/setup-android.sh
+```
+
+Installs Android SDK (cmdline-tools, platform-tools, build-tools, emulator, system image), creates a Pixel emulator, and configures `JAVA_HOME`/`ANDROID_HOME`/`PATH` in `~/.bashrc`. Requires `android-studio` (available via `install-slow-packages.sh`).
+
 ## QEMU / Virt-Manager Setup
 
 See [VM-SETUP.md](VM-SETUP.md) for the full guide on setting up QEMU, virt-manager, and Kali Linux VMs.
