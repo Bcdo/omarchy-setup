@@ -150,6 +150,36 @@ if [ -f npm-packages.txt ] && [ -s npm-packages.txt ]; then
     fi
 fi
 
+# Configure libvirt/QEMU (if packages are installed)
+if pacman -Qi qemu-full &>/dev/null && pacman -Qi virt-manager &>/dev/null; then
+    echo
+    echo "🖥️  Configuring libvirt/QEMU..."
+    
+    # Add user to libvirt group
+    if ! groups $(whoami) | grep -qw libvirt; then
+        sudo usermod -aG libvirt $(whoami)
+        echo "   → Added $(whoami) to libvirt group (log out/in to apply)"
+    else
+        echo "   → Already in libvirt group"
+    fi
+    
+    # Enable libvirtd and modular sockets
+    sudo systemctl enable --now libvirtd 2>/dev/null
+    sudo systemctl enable --now virtnetworkd.socket 2>/dev/null
+    sudo systemctl enable --now virtqemud.socket 2>/dev/null
+    sudo systemctl enable --now virtstoraged.socket 2>/dev/null
+    echo "   → libvirtd and sockets enabled"
+    
+    # Start default NAT network
+    if sudo virsh net-info default &>/dev/null; then
+        sudo virsh net-autostart default 2>/dev/null || true
+        sudo virsh net-start default 2>/dev/null || true
+        echo "   → Default network configured"
+    else
+        echo "   ⚠️  No default network defined — create one manually (see VM-SETUP.md)"
+    fi
+fi
+
 # Install Hyprland config
 echo
 echo "⌨️  Installing Hyprland configuration..."
