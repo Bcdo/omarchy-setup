@@ -20,7 +20,9 @@ echo "Switching Omarchy theme → $CHOICE"
 
 # Preferred: use omarchy helper if available (runs additional hooks)
 if command -v omarchy-theme-set >/dev/null 2>&1; then
-  omarchy-theme-set "$CHOICE"
+  # Skip omarchy's own background launch; we pick a random one below.
+  # Avoids two racing swaybg spawns within the same service cgroup.
+  OMARCHY_THEME_SKIP_BACKGROUND=1 omarchy-theme-set "$CHOICE"
 
   THEME_BACKGROUNDS_PATH="$HOME/.config/omarchy/current/theme/backgrounds/"
   USER_BACKGROUNDS_PATH="$HOME/.config/omarchy/backgrounds/$CHOICE/"
