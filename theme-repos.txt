@@ -52,7 +52,6 @@ https://github.com/bjarneo/omarchy-futurism-theme.git
 https://github.com/tahayvr/omarchy-gold-rush-theme.git
 https://github.com/HANCORE-linux/omarchy-thegreek-theme.git
 https://github.com/kalk-ak/omarchy-green-garden-theme.git
-https://github.com/joaquinmeza/omarchy-hakker-green-theme.git
 https://github.com/RiO7MAKK3R/omarchy-infernium-dark-theme.git
 https://github.com/steve-lohmeyer/omarchy-mars-theme.git
 https://github.com/OldJobobo/omarchy-miasma-theme.git
@@ -84,7 +83,6 @@ https://github.com/TyRichards/omarchy-super-game-bro-theme.git
 https://github.com/omacom-io/omarchy-synthwave84-theme.git
 https://github.com/Ahmad-Mtr/omarchy-temerald-theme.git
 https://github.com/Justin-De-Sio/omarchy-tokyoled-theme.git
-https://github.com/monoooki/omarchy-torrentz-hydra-theme.git
 https://github.com/leonardobetti/omarchy-tycho.git
 https://github.com/tahayvr/omarchy-vhs80-theme.git
 https://github.com/Nirmal314/omarchy-van-gogh-theme.git

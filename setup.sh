@@ -510,7 +510,7 @@ if [ -f theme-repos.txt ]; then
             ((THEMES_SKIPPED++)) || true
         else
             echo "   → Installing $THEME_NAME..."
-            if git clone --depth 1 --quiet "$repo_url" "$THEME_PATH" 2>/dev/null; then
+            if GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$repo_url" "$THEME_PATH" 2>/dev/null; then
                 ((THEMES_INSTALLED++)) || true
             else
                 echo "   ⚠️  Failed to install $THEME_NAME"
