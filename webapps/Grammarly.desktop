@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name=Grammarly
-Comment=Grammarly
-Exec=omarchy-launch-webapp https://app.grammarly.com/
-Terminal=false
-Type=Application
-Icon=/home/bcdo/.local/share/applications/icons/Grammarly.png
-StartupNotify=true

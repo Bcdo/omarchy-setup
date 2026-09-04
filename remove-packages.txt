@@ -1,6 +1,7 @@
 # Packages to remove from stock Omarchy
 # One package per line
 spotify
+1password
 1password-beta
 1password-cli
 typora

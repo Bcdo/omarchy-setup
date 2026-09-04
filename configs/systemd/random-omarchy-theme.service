@@ -1,12 +1,7 @@
 [Unit]
 Description=Apply random Omarchy theme (oneshot)
+After=graphical-session.target
 
 [Service]
 Type=oneshot
-# Keep the unit active after the script exits so systemd does NOT tear down
-# the service cgroup. Without this, KillMode=control-group SIGTERMs the swaybg
-# we just spawned before uwsm-app can migrate it into the graphical session
-# scope -> black background.
-RemainAfterExit=yes
 ExecStart=%h/.local/bin/random-omarchy-theme.sh
-

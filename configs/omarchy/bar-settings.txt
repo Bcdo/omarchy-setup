@@ -1,0 +1,4 @@
+# Bar widget settings applied with: omarchy bar set <widget> <key> <value>
+# Format: widget|key|value   (Qt date format for the clock)
+omarchy.clock|format|dddd HH:mm - d MMMM yyyy 'W'ww
+omarchy.clock|formatAlt|d MMMM yyyy 'W'ww

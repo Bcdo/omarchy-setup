@@ -1,6 +1,8 @@
-# Omarchy Custom Setup
+# Omarchy Custom Setup (quattro)
 
-Personal setup for Omarchy Linux. Run `./setup.sh` to deploy configs to a new system.
+Personal setup for Omarchy Linux 4 ("quattro"). Run `./setup.sh` to deploy configs to a new system.
+
+This is the `quattro` branch. For Omarchy 3.x and earlier use the `master` branch.
 
 ## Usage
 
@@ -8,16 +10,36 @@ Personal setup for Omarchy Linux. Run `./setup.sh` to deploy configs to a new sy
 ./setup.sh
 ```
 
-The script installs packages, deploys configs, and sets up systemd timers. It prompts for laptop vs desktop (for hypridle config) and optionally installs slow-building AUR packages and debloats inspired by [debloat script](https://github.com/DanielCoffey1/a-la-carchy).
+The script installs packages, deploys configs, and sets up systemd timers. It prompts for laptop vs desktop (for idle/lock timeouts) and optionally installs slow-building AUR packages and debloats inspired by [debloat script](https://github.com/DanielCoffey1/a-la-carchy).
 
 ## Structure
 
-- `configs/` - Hyprland, Waybar, Mako, Neovim, systemd configs → `~/.config/`
+- `configs/hypr/` - Hyprland Lua overrides (`bindings.lua`, `input.lua`, `monitors.lua`) → `~/.config/hypr/`
+- `configs/omarchy/idle-{desktop,laptop}.json` - Screensaver/lock timeouts merged into `~/.config/omarchy/shell.json`
+- `configs/omarchy/bar-settings.txt` - Bar widget settings applied with `omarchy bar set` (clock format)
+- `configs/omarchy/branding/` - Screensaver branding
+- `configs/nvim/`, `configs/systemd/`, `configs/udev/` - Neovim, systemd timers, battery thresholds
 - `scripts/bin/` - Custom binaries → `~/.local/bin/`
-- `webapps/` - .desktop files → `~/.local/share/applications/`
+- `webapps.txt` - Web apps (`name|url|icon`) installed with `omarchy-webapp-install`
 - `theme-repos.txt` - Git URLs for themes → cloned to `~/.config/omarchy/themes/`
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
+
+## What changed from the pre-quattro setup
+
+Omarchy 4 replaced Waybar, mako, hypridle and the `.conf` Hyprland files with a Quickshell-based
+shell and Lua Hyprland config. This branch adapts to that:
+
+- Hyprland `.conf` overrides became Lua (`hl.config`, `o.bind`, `hl.unbind`). Only the differences
+  from Omarchy's defaults are kept (Proton mail/calendar, GitHub on Super+Shift+Alt+G, btop on
+  Super+Shift+T, Norwegian layout).
+- Idle timeouts are `idle.screensaver` / `idle.lock` in `shell.json`. Screen-off and suspend timers
+  from the old hypridle configs have no equivalent in the shell yet.
+- The Waybar clock format is now set on the `omarchy.clock` bar widget. The Pomodoro bar module is
+  not shown in the new bar (a shell bar-widget plugin is needed); the CLI binary is still installed.
+- mako is gone; notifications are rendered by the shell, so the custom Pomodoro/battery styling is dropped.
+- Web apps are installed via `omarchy-webapp-install` so icons land in `~/.local/share/icons`.
+- `random-omarchy-theme.sh` uses `omarchy-theme-set` + `omarchy-theme-bg-set` (no swaybg).
 
 ## Android / Expo Development
 
@@ -36,5 +58,5 @@ See [VM-SETUP.md](VM-SETUP.md) for the full guide on setting up QEMU, virt-manag
 ## Notes
 
 - Backups are created as `filename.bak.YYYY-MM-DD_HH-MM-SS` before overwriting
-- After setup, edit `~/.config/hypr/monitors.conf` for your displays
-- The `waybar-module-pomodoro` binary is custom as it was the only way to change the message. Edit `configs/mako/config` to change styling only
+- After setup, edit `~/.config/hypr/monitors.lua` for your displays
+- Bar layout can be tweaked live with `omarchy bar ...` and `omarchy plugin ...`

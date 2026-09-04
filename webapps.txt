@@ -1,0 +1,12 @@
+# Web apps installed with: omarchy-webapp-install "<name>" "<url>" "<icon>"
+# Format: name|url|icon   (icon is optional: a PNG URL, a local file, or an
+# icon name. Leave it empty to fetch the site's own icon automatically.)
+Boardgame Arena|https://boardgamearena.com/gameinprogress|
+GitHub|https://github.com/|
+Grammarly|https://app.grammarly.com/|
+LinkedIn|https://www.linkedin.com/feed/|
+Lumo|https://lumo.proton.me/u/0/|
+Proton Calendar|https://calendar.proton.me/u/1/|
+Proton Drive|https://drive.proton.me/u/1/|
+Proton Mail|https://mail.proton.me/u/0/inbox|
+Try Hack Me|https://tryhackme.com/dashboard|

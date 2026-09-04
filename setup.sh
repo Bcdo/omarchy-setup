@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Omarchy Setup - Restore Script
+# Omarchy Setup - Restore Script (Omarchy 4 "quattro" edition)
 # Restores configuration from this repository to the system
 
 # Check if running as root
@@ -17,6 +17,18 @@ cd "$SCRIPT_DIR"
 
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
+# Locate the Omarchy install (exported by Hyprland; fall back to the usual places)
+if [ -z "$OMARCHY_PATH" ]; then
+    for candidate in "$HOME/.local/share/omarchy" /usr/share/omarchy; do
+        if [ -d "$candidate/bin" ]; then
+            export OMARCHY_PATH="$candidate"
+            break
+        fi
+    done
+fi
+SHELL_JSON="$HOME/.config/omarchy/shell.json"
+SHELL_JSON_DEFAULT="$OMARCHY_PATH/config/omarchy/shell.json"
+
 # Helper function to backup and copy files
 backup_and_copy() {
     local src="$1"
@@ -32,8 +44,37 @@ backup_and_copy() {
     cp "$src" "$dest"
 }
 
-echo "=== Omarchy Setup ==="
+# Apply a jq program to ~/.config/omarchy/shell.json (seeded from the Omarchy
+# default when the user file is missing/empty) and ask the shell to reload it.
+shell_json_apply() {
+    local program="$1"
+    shift
+    local source="$SHELL_JSON"
+    [ -s "$source" ] || source="$SHELL_JSON_DEFAULT"
+    if [ ! -f "$source" ]; then
+        echo "   ⚠️  No shell.json found (is Omarchy 4 installed?), skipping"
+        return 1
+    fi
+    mkdir -p "$(dirname "$SHELL_JSON")"
+    local tmp
+    tmp=$(mktemp)
+    jq -S "$@" "$program" "$source" > "$tmp"
+    mv "$tmp" "$SHELL_JSON"
+    omarchy-shell shell reloadConfig >/dev/null 2>&1 || true
+}
+
+echo "=== Omarchy Setup (quattro) ==="
 echo
+
+# Require Omarchy 4+ (this branch targets the quickshell-based quattro release)
+OMARCHY_VERSION=$(cat "$OMARCHY_PATH/version" 2>/dev/null || omarchy-version 2>/dev/null || echo "0")
+if [[ "${OMARCHY_VERSION%%.*}" =~ ^[0-9]+$ ]] && [ "${OMARCHY_VERSION%%.*}" -lt 4 ]; then
+    echo "⚠️  Omarchy $OMARCHY_VERSION detected, but this setup targets Omarchy 4 (quattro)."
+    echo "   Use the 'master' branch for older versions, or run omarchy-upgrade-to-quattro first."
+    read -p "Continue anyway? (y/n): " continue_anyway
+    [[ "$continue_anyway" =~ ^[Yy]$ ]] || exit 1
+    echo
+fi
 
 # Update Omarchy first (ensures fresh package databases and applies migrations)
 read -p "Run omarchy-update first? (recommended) (y/n): " do_update
@@ -56,7 +97,15 @@ if [ -f remove-packages.txt ]; then
     done < remove-packages.txt
     
     if [ -n "$PKGS_TO_REMOVE" ]; then
-        sudo pacman -Rns --noconfirm $PKGS_TO_REMOVE
+        # 1Password also ships a Chromium extension; let Omarchy clean that up
+        if [[ "$PKGS_TO_REMOVE" =~ 1password ]] && command -v omarchy-remove-service-1password &>/dev/null; then
+            omarchy-remove-service-1password
+        fi
+        if command -v omarchy-pkg-drop &>/dev/null; then
+            omarchy-pkg-drop $PKGS_TO_REMOVE
+        else
+            sudo pacman -Rns --noconfirm $PKGS_TO_REMOVE
+        fi
         echo "   → Removed:$PKGS_TO_REMOVE"
     else
         echo "   → No packages to remove (already uninstalled)"
@@ -75,7 +124,12 @@ if [ -f remove-webapps.txt ]; then
         [[ -z "$webapp" || "$webapp" =~ ^# ]] && continue
         DESKTOP_FILE="$HOME/.local/share/applications/$webapp.desktop"
         if [ -f "$DESKTOP_FILE" ]; then
-            rm "$DESKTOP_FILE"
+            # omarchy-webapp-remove also deletes the icon; fall back to plain rm
+            if command -v omarchy-webapp-remove &>/dev/null; then
+                OMARCHY_REMOVE_NOTIFY=false omarchy-webapp-remove "$webapp" >/dev/null 2>&1 || rm -f "$DESKTOP_FILE"
+            else
+                rm -f "$DESKTOP_FILE"
+            fi
             ((REMOVED_COUNT++)) || true
         fi
     done < remove-webapps.txt
@@ -92,7 +146,7 @@ echo
 
 # Ask about machine type upfront (before installations)
 MACHINE_TYPE="desktop"
-if [ -f configs/hypr/hypridle-desktop.conf ] || [ -f configs/hypr/hypridle-laptop.conf ]; then
+if [ -f configs/omarchy/idle-desktop.json ] || [ -f configs/omarchy/idle-laptop.json ]; then
   read -p "Is this a (l)aptop or (d)esktop? (l/d): " machine_type_input
     case "$machine_type_input" in
         l|L|laptop)
@@ -180,29 +234,29 @@ if pacman -Qi qemu-full &>/dev/null && pacman -Qi virt-manager &>/dev/null; then
     fi
 fi
 
-# Install Hyprland config
+# Install Hyprland config (Lua overrides loaded by ~/.config/hypr/hyprland.lua)
 echo
 echo "⌨️  Installing Hyprland configuration..."
 if [ -d configs/hypr ] && [ "$(ls -A configs/hypr)" ]; then
     mkdir -p ~/.config/hypr
-    
-    # Apply hypridle config based on machine type
-    if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/hypr/hypridle-laptop.conf ]; then
-        backup_and_copy configs/hypr/hypridle-laptop.conf ~/.config/hypr/hypridle.conf
-    elif [ -f configs/hypr/hypridle-desktop.conf ]; then
-        backup_and_copy configs/hypr/hypridle-desktop.conf ~/.config/hypr/hypridle.conf
-    fi
-    
-    # Copy all other hypr configs (except hypridle variants)
-    for file in configs/hypr/*; do
-        filename=$(basename "$file")
-        if [[ "$filename" != "hypridle-desktop.conf" && "$filename" != "hypridle-laptop.conf" ]]; then
-            [ -f "$file" ] && backup_and_copy "$file" ~/.config/hypr/$filename
-        fi
+    for file in configs/hypr/*.lua; do
+        [ -f "$file" ] && backup_and_copy "$file" ~/.config/hypr/$(basename "$file")
     done
-    echo "   → Hyprland config applied"
+    echo "   → Hyprland config applied (bindings, input, monitors)"
 else
     echo "   → No Hyprland config to apply"
+fi
+
+# Idle timeouts (screensaver/lock) live in shell.json now that hypridle is gone
+echo
+echo "💤 Configuring idle timeouts ($MACHINE_TYPE)..."
+IDLE_FILE="configs/omarchy/idle-$MACHINE_TYPE.json"
+if [ -f "$IDLE_FILE" ]; then
+    if shell_json_apply '.idle = (.idle // {}) + $idle.idle' --argjson idle "$(cat "$IDLE_FILE")"; then
+        echo "   → Screensaver after $(jq -r .idle.screensaver "$IDLE_FILE")s, lock after $(jq -r .idle.lock "$IDLE_FILE")s"
+    fi
+else
+    echo "   → No idle profile for $MACHINE_TYPE, keeping Omarchy defaults"
 fi
 
 # Install battery charge thresholds (laptop only)
@@ -228,6 +282,8 @@ if [ -d configs/systemd ] && [ "$(ls -A configs/systemd)" ]; then
         [ -f "$file" ] && backup_and_copy "$file" ~/.config/systemd/user/$(basename "$file")
     done
     
+    systemctl --user daemon-reload
+
     # Enable and start timers
     for timer in configs/systemd/*.timer; do
         if [ -f "$timer" ]; then
@@ -237,36 +293,29 @@ if [ -d configs/systemd ] && [ "$(ls -A configs/systemd)" ]; then
         fi
     done
     
-    systemctl --user daemon-reload
     echo "   → Daily theme randomizer timer enabled"
 else
     echo "   → No systemd configs to apply"
 fi
 
-# Install Waybar config
+# Configure the Omarchy shell bar (replaces the old Waybar config)
 echo
-echo "📊 Installing Waybar configuration..."
-if [ -d configs/waybar ] && [ "$(ls -A configs/waybar)" ]; then
-    mkdir -p ~/.config/waybar
-    for file in configs/waybar/*; do
-        [ -f "$file" ] && backup_and_copy "$file" ~/.config/waybar/$(basename "$file")
-    done
-    echo "   → Waybar config applied (custom clock format + Pomodoro module)"
+echo "📊 Configuring bar widgets..."
+if [ -f configs/omarchy/bar-settings.txt ]; then
+    while IFS='|' read -r widget key value; do
+        [[ -z "$widget" || "$widget" =~ ^# ]] && continue
+        if command -v omarchy-bar &>/dev/null && omarchy-bar set "$widget" "$key" "$value" >/dev/null 2>&1; then
+            echo "   → $widget: $key = $value"
+        else
+            # Shell not running (e.g. over SSH): edit shell.json directly
+            if shell_json_apply '(.bar.layout[]?[]? | select(.id == $id)) |= (.[$key] = $value)' \
+                --arg id "$widget" --arg key "$key" --arg value "$value"; then
+                echo "   → $widget: $key = $value (written to shell.json)"
+            fi
+        fi
+    done < configs/omarchy/bar-settings.txt
 else
-    echo "   → No Waybar config to apply"
-fi
-
-# Install mako config
-echo
-echo "🔔 Installing mako notification configuration..."
-if [ -f configs/mako/config ]; then
-    mkdir -p ~/.config/mako
-    # Remove the existing symlink if it exists
-    [ -L ~/.config/mako/config ] && rm ~/.config/mako/config
-    backup_and_copy configs/mako/config ~/.config/mako/config
-    echo "   → Mako config applied (custom Pomodoro notifications)"
-else
-    echo "   → No mako config to apply"
+    echo "   → No bar settings to apply"
 fi
 
 # Install omarchy branding
@@ -326,7 +375,7 @@ nvim --headless "+TSUpdateSync" +qa 2>/dev/null && \
     echo "   → Treesitter parsers updated" || \
     echo "   ⚠️  Treesitter update skipped (run :TSUpdate manually in nvim)"
 
-# Install custom binaries (pomodoro module, etc.)
+# Install custom binaries (theme randomizer, pomodoro CLI, etc.)
 echo
 echo "🔧 Installing custom binaries..."
 if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
@@ -342,12 +391,12 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
         fi
     done
     
-    # Ensure ~/.local/bin is in session PATH (for Hyprland/waybar to find custom binaries)
+    # Ensure ~/.local/bin is in session PATH (for Hyprland/shell to find custom binaries)
     UWSM_DEFAULT="$HOME/.config/uwsm/default"
     if [ -f "$UWSM_DEFAULT" ]; then
         if ! grep -q 'export PATH="\$HOME/.local/bin' "$UWSM_DEFAULT"; then
             echo '' >> "$UWSM_DEFAULT"
-            echo '# Add ~/.local/bin to PATH for custom binaries (e.g., waybar-module-pomodoro)' >> "$UWSM_DEFAULT"
+            echo '# Add ~/.local/bin to PATH for custom binaries' >> "$UWSM_DEFAULT"
             echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$UWSM_DEFAULT"
             echo "   → Added ~/.local/bin to session PATH (uwsm/default)"
         fi
@@ -358,24 +407,25 @@ else
     echo "   → No custom binaries to install"
 fi
 
-# Install webapps (.desktop files)
+# Install web apps (via omarchy-webapp-install so icons land in the right place)
 echo
 echo "🌐 Installing web apps..."
-if [ -d webapps ] && [ "$(ls -A webapps/*.desktop 2>/dev/null)" ]; then
-    mkdir -p ~/.local/share/applications
-    for file in webapps/*.desktop; do
-        if [ -f "$file" ]; then
-            DEST=~/.local/share/applications/$(basename "$file")
-            if [ ! -f "$DEST" ]; then
-                cp "$file" "$DEST"
-            else
-                echo "   → Skipped $(basename "$file") (already installed)"
-            fi
+if [ -f webapps.txt ]; then
+    WEBAPPS_INSTALLED=0
+    while IFS='|' read -r name url icon; do
+        [[ -z "$name" || "$name" =~ ^# ]] && continue
+        DEST="$HOME/.local/share/applications/$name.desktop"
+        if [ -f "$DEST" ]; then
+            echo "   → Skipped $name (already installed)"
+        elif omarchy-webapp-install "$name" "$url" "$icon" >/dev/null 2>&1; then
+            ((WEBAPPS_INSTALLED++)) || true
+        else
+            echo "   ⚠️  Failed to install $name"
         fi
-    done
-    echo "   → Web apps installed"
+    done < webapps.txt
+    echo "   → Installed $WEBAPPS_INSTALLED web app(s)"
 else
-    echo "   → No web apps to install"
+    echo "   → No webapps.txt found, skipping"
 fi
 
 # Install themes from GitHub
@@ -390,11 +440,8 @@ if [ -f theme-repos.txt ]; then
         # Skip empty lines and comments
         [[ -z "$repo_url" || "$repo_url" =~ ^# ]] && continue
         
-        # Extract theme name from repo URL
-        THEME_NAME=$(basename "$repo_url" .git)
-        # Remove common prefixes/suffixes
-        THEME_NAME=${THEME_NAME#omarchy-}
-        THEME_NAME=${THEME_NAME%-theme}
+        # Extract theme name from repo URL (same normalization as omarchy-theme-install)
+        THEME_NAME=$(basename "$repo_url" .git | sed -E 's/^omarchy-//; s/-theme$//' | tr '[:upper:]' '[:lower:]')
         
         THEME_PATH=~/.config/omarchy/themes/"$THEME_NAME"
         
@@ -428,36 +475,37 @@ fi
 # Set Firefox as default browser
 echo
 echo "🌐 Setting Firefox as default browser..."
-if command -v firefox &> /dev/null; then
-    xdg-settings set default-web-browser firefox.desktop
+if command -v firefox &> /dev/null && command -v omarchy-default-browser &> /dev/null; then
+    omarchy-default-browser firefox
+    echo "   → Firefox set as default browser"
+elif command -v firefox &> /dev/null; then
+    env -u BROWSER xdg-settings set default-web-browser firefox.desktop
     echo "   → Firefox set as default browser"
 elif command -v firefox-developer-edition &> /dev/null; then
-    xdg-settings set default-web-browser firefox-developer-edition.desktop
+    env -u BROWSER xdg-settings set default-web-browser firefox-developer-edition.desktop
     echo "   → Firefox Developer Edition set as default browser"
 else
     echo "   → Firefox not installed, skipping"
 fi
 
-# Restart Waybar if running
+# Reload Hyprland so the new Lua config takes effect
 echo
-echo "🔄 Restarting Waybar..."
-if pgrep -x waybar > /dev/null; then
-    killall waybar
-    echo "   → Waybar restarted (will be relaunched by Hyprland)"
+echo "🔄 Reloading Hyprland..."
+if hyprctl reload >/dev/null 2>&1; then
+    echo "   → Hyprland config reloaded"
 else
-    echo "   → Waybar not running, skipping restart"
+    echo "   → Hyprland not running, skipping reload"
 fi
 
 echo
 echo "✅ Setup Complete!"
 echo
 echo "⚠️  MANUAL CONFIGURATION NEEDED:"
-echo "   • Edit ~/.config/hypr/monitor.conf to match your display setup"
+echo "   • Edit ~/.config/hypr/monitors.lua to match your display setup"
 echo "   • Run 'hyprctl monitors' to see available monitors"
 echo
 echo "⚠️  TO APPLY ALL CHANGES:"
-echo "   • Log out and log back in, or run: hyprctl reload"
-echo "   • This is needed for Waybar to pick up the custom binaries (like Pomodoro)"
+echo "   • Log out and log back in (needed for PATH and shell changes)"
 
 # Check for slow AUR packages
 if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then

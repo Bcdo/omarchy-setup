@@ -1,24 +1,29 @@
 # WARP.md
 
-Personal dotfiles for Omarchy Linux (Arch-based). Run `./setup.sh` to deploy.
+Personal dotfiles for Omarchy Linux 4 "quattro" (Arch-based). Run `./setup.sh` to deploy.
+The `master` branch targets pre-quattro Omarchy.
 
 ## Structure
 
-- `configs/` - Config files deployed to `~/.config/` (hypr, waybar, mako, nvim, systemd)
+- `configs/hypr/*.lua` - Hyprland Lua overrides deployed to `~/.config/hypr/` (loaded by Omarchy's `hyprland.lua`)
+- `configs/omarchy/idle-*.json` - Idle timeouts merged into `~/.config/omarchy/shell.json`
+- `configs/omarchy/bar-settings.txt` - `omarchy bar set` values (clock format)
+- `configs/` - nvim, systemd, udev, branding deployed to `~/.config/`
 - `scripts/bin/` - Custom binaries deployed to `~/.local/bin/`
-- `webapps/` - .desktop files for web apps
+- `webapps.txt` - Web apps installed with `omarchy-webapp-install` (`name|url|icon`)
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists to install
 - `remove-packages.txt` - Stock Omarchy packages to uninstall
-- `remove-webapps.txt` - Stock Omarchy webapps to remove
+- `remove-webapps.txt` - Stock Omarchy webapps to remove (via `omarchy-webapp-remove`)
 - `npm-packages.txt` - Global npm packages
 - `theme-repos.txt` - Git URLs for custom themes (cloned to `~/.config/omarchy/themes/`)
 
 ## Key Notes
 
-- `hypridle-desktop.conf` / `hypridle-laptop.conf` - Script prompts which to deploy
-- `waybar-module-pomodoro` - Custom compiled binary with modified notification messages (not the stock version)
+- Laptop/desktop prompt picks `idle-laptop.json` or `idle-desktop.json` (screensaver + lock seconds)
+- Waybar, mako and hypridle no longer exist in quattro; the Quickshell shell owns bar, notifications and idle
+- `waybar-module-pomodoro` is still installed as a CLI but has no bar widget yet
 - `setup.sh` creates timestamped `.bak.*` backups before overwriting files
-- After setup, edit `~/.config/hypr/monitors.conf` for your displays
+- After setup, edit `~/.config/hypr/monitors.lua` for your displays
 
 ## Debloat Features (inspired by a-la-carchy)
 
