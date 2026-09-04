@@ -76,10 +76,22 @@ if [[ "${OMARCHY_VERSION%%.*}" =~ ^[0-9]+$ ]] && [ "${OMARCHY_VERSION%%.*}" -lt 
     echo
 fi
 
-# Update Omarchy first (ensures fresh package databases and applies migrations)
+# Update Omarchy first (ensures fresh package databases and applies migrations).
+# omarchy-update ends by calling omarchy-update-restart, which offers a reboot
+# when the kernel or Hyprland changed. Accepting that mid-run kills this script
+# before any config is applied, so shadow it with a stub for the update only
+# and run the real one as the very last step below.
 read -p "Run omarchy-update first? (recommended) (y/n): " do_update
 if [[ "$do_update" =~ ^[Yy]$ ]]; then
-    omarchy-update -y
+    UPDATE_SHIM=$(mktemp -d)
+    cat > "$UPDATE_SHIM/omarchy-update-restart" <<'SHIM'
+#!/bin/bash
+echo
+echo "Reboot/restart check deferred until setup finishes."
+SHIM
+    chmod +x "$UPDATE_SHIM/omarchy-update-restart"
+    PATH="$UPDATE_SHIM:$PATH" omarchy-update -y
+    rm -rf "$UPDATE_SHIM"
     echo
 fi
 
@@ -623,3 +635,12 @@ fi
 # Clear package cache (keep only latest version)
 yay -Sc --noconfirm 2>/dev/null || true
 echo "   → Cleared package cache"
+
+# Deferred from the update step: offers a reboot if the kernel or Hyprland
+# changed, restarts services flagged by migrations, and reloads the shell so
+# the shell.json changes above take effect.
+if command -v omarchy-update-restart &>/dev/null; then
+    echo
+    echo "🔄 Checking whether a reboot or restart is needed..."
+    omarchy-update-restart
+fi

@@ -12,6 +12,8 @@ This is the `quattro` branch. For Omarchy 3.x and earlier use the `master` branc
 
 The script installs packages, deploys configs, and sets up systemd timers. It prompts for laptop vs desktop (for idle/lock timeouts) and optionally installs slow-building AUR packages and debloats inspired by [debloat script](https://github.com/DanielCoffey1/a-la-carchy).
 
+If you accept the `omarchy-update` prompt, the update runs first but its reboot question is deferred: the script finishes deploying configs and only then offers a reboot (via `omarchy-update-restart`) if the kernel or Hyprland changed.
+
 ## Structure
 
 - `configs/hypr/` - Hyprland Lua overrides (`bindings.lua`, `input.lua`, `monitors.lua`) → `~/.config/hypr/`
