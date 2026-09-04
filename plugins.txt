@@ -1,0 +1,4 @@
+# Omarchy shell plugins to install and enable (Omarchy 4+).
+# Format: git-url|section   (section is optional: left, center or right for bar widgets)
+# Installed with: omarchy plugin add <url> --enable --yes
+# Browse: https://omarchy.org/plugins  |  list installed: omarchy plugin list

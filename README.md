@@ -21,6 +21,7 @@ The script installs packages, deploys configs, and sets up systemd timers. It pr
 - `configs/nvim/`, `configs/systemd/`, `configs/udev/` - Neovim, systemd timers, battery thresholds
 - `scripts/bin/` - Custom binaries → `~/.local/bin/`
 - `webapps.txt` - Web apps (`name|url|icon`) installed with `omarchy-webapp-install`
+- `plugins.txt` - Shell plugins (`git-url|section`) installed with `omarchy plugin add --enable`
 - `theme-repos.txt` - Git URLs for themes → cloned to `~/.config/omarchy/themes/`
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
@@ -33,11 +34,11 @@ shell and Lua Hyprland config. This branch adapts to that:
 - Hyprland `.conf` overrides became Lua (`hl.config`, `o.bind`, `hl.unbind`). Only the differences
   from Omarchy's defaults are kept (Proton mail/calendar, GitHub on Super+Shift+Alt+G, btop on
   Super+Shift+T, Norwegian layout).
-- Idle timeouts are `idle.screensaver` / `idle.lock` in `shell.json`. Screen-off and suspend timers
-  from the old hypridle configs have no equivalent in the shell yet.
-- The Waybar clock format is now set on the `omarchy.clock` bar widget. The Pomodoro bar module is
-  not shown in the new bar (a shell bar-widget plugin is needed); the CLI binary is still installed.
-- mako is gone; notifications are rendered by the shell, so the custom Pomodoro/battery styling is dropped.
+- Idle timeouts are `idle.screensaver` / `idle.lock` in `shell.json` (the shell has no separate
+  screen-off/suspend timers, so those were dropped).
+- The Waybar clock format is now set on the `omarchy.clock` bar widget. The custom Pomodoro module
+  was dropped; bar extras are shell plugins now (see `plugins.txt`).
+- mako is gone; notifications are rendered by the shell, so the custom notification styling is dropped.
 - Web apps are installed via `omarchy-webapp-install` so icons land in `~/.local/share/icons`.
 - `random-omarchy-theme.sh` uses `omarchy-theme-set` + `omarchy-theme-bg-set` (no swaybg).
 

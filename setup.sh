@@ -375,7 +375,7 @@ nvim --headless "+TSUpdateSync" +qa 2>/dev/null && \
     echo "   → Treesitter parsers updated" || \
     echo "   ⚠️  Treesitter update skipped (run :TSUpdate manually in nvim)"
 
-# Install custom binaries (theme randomizer, pomodoro CLI, etc.)
+# Install custom binaries (theme randomizer, etc.)
 echo
 echo "🔧 Installing custom binaries..."
 if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
@@ -405,6 +405,54 @@ if [ -d scripts/bin ] && [ "$(ls -A scripts/bin)" ]; then
     echo "   → Custom binaries installed"
 else
     echo "   → No custom binaries to install"
+fi
+
+# Install Omarchy shell plugins (bar widgets, panels, services)
+echo
+echo "🧩 Installing Omarchy shell plugins..."
+if [ -f plugins.txt ] && grep -qvE '^\s*(#|$)' plugins.txt; then
+    if ! command -v omarchy-plugin-add &>/dev/null; then
+        echo "   ⚠️  omarchy-plugin-add not found, skipping"
+    else
+        PLUGINS_DIR="$HOME/.config/omarchy/plugins"
+        PLUGINS_INSTALLED=0
+        while IFS='|' read -r plugin_url plugin_section; do
+            [[ -z "$plugin_url" || "$plugin_url" =~ ^# ]] && continue
+            plugin_url=$(echo "$plugin_url" | xargs)
+            plugin_section=$(echo "$plugin_section" | xargs)
+
+            # Already installed? Match the clone URL of the existing plugin dirs
+            ALREADY=""
+            for dir in "$PLUGINS_DIR"/*/; do
+                [ -d "$dir/.git" ] || continue
+                if [ "$(git -C "$dir" remote get-url origin 2>/dev/null)" = "$plugin_url" ]; then
+                    ALREADY=$(basename "$dir")
+                    break
+                fi
+            done
+
+            if [ -n "$ALREADY" ]; then
+                echo "   → Skipped $ALREADY (already installed)"
+                continue
+            fi
+
+            echo "   → Installing $(basename "$plugin_url" .git)..."
+            if ADD_OUTPUT=$(omarchy-plugin-add "$plugin_url" --yes 2>&1); then
+                echo "$ADD_OUTPUT" | sed 's/^/      /'
+                PLUGIN_ID=$(echo "$ADD_OUTPUT" | sed -n 's/^Added \(.*\) into .*/\1/p' | tail -1)
+                [ -n "$PLUGIN_ID" ] || PLUGIN_ID=$(basename "$(ls -td "$PLUGINS_DIR"/*/ | head -1)")
+                PLACEMENT=()
+                [ -n "$plugin_section" ] && PLACEMENT=(--section "$plugin_section")
+                omarchy-plugin-enable "$PLUGIN_ID" "${PLACEMENT[@]}" || echo "   ⚠️  Could not enable $PLUGIN_ID"
+                ((PLUGINS_INSTALLED++)) || true
+            else
+                echo "   ⚠️  Failed to install $plugin_url"
+            fi
+        done < plugins.txt
+        echo "   → Installed $PLUGINS_INSTALLED plugin(s)"
+    fi
+else
+    echo "   → No plugins listed in plugins.txt"
 fi
 
 # Install web apps (via omarchy-webapp-install so icons land in the right place)

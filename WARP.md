@@ -11,6 +11,7 @@ The `master` branch targets pre-quattro Omarchy.
 - `configs/` - nvim, systemd, udev, branding deployed to `~/.config/`
 - `scripts/bin/` - Custom binaries deployed to `~/.local/bin/`
 - `webapps.txt` - Web apps installed with `omarchy-webapp-install` (`name|url|icon`)
+- `plugins.txt` - Shell plugins installed with `omarchy plugin add --yes` then enabled (`git-url|section`)
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists to install
 - `remove-packages.txt` - Stock Omarchy packages to uninstall
 - `remove-webapps.txt` - Stock Omarchy webapps to remove (via `omarchy-webapp-remove`)
@@ -21,7 +22,6 @@ The `master` branch targets pre-quattro Omarchy.
 
 - Laptop/desktop prompt picks `idle-laptop.json` or `idle-desktop.json` (screensaver + lock seconds)
 - Waybar, mako and hypridle no longer exist in quattro; the Quickshell shell owns bar, notifications and idle
-- `waybar-module-pomodoro` is still installed as a CLI but has no bar widget yet
 - `setup.sh` creates timestamped `.bak.*` backups before overwriting files
 - After setup, edit `~/.config/hypr/monitors.lua` for your displays
 
