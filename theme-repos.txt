@@ -42,7 +42,6 @@ https://github.com/HANCORE-linux/omarchy-demon-theme.git
 https://github.com/dotsilva/omarchy-dotrb-theme.git
 https://github.com/ShehabShaef/omarchy-drac-theme.git
 https://github.com/catlee/omarchy-dracula-theme.git
-https://github.com/eldritch-theme/omarchy.git
 https://github.com/celsobenedetti/omarchy-evergarden.git
 https://github.com/TyRichards/omarchy-felix-theme.git
 https://github.com/bjarneo/omarchy-fireside-theme.git
