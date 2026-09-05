@@ -1,4 +1,3 @@
 jetbrains-toolbox
-warp-terminal-bin
 notion-app-electron
 live-server
