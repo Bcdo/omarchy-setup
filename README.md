@@ -39,7 +39,7 @@ shell and Lua Hyprland config. This branch adapts to that:
 - Idle timeouts are `idle.screensaver` / `idle.lock` in `shell.json` (the shell has no separate
   screen-off/suspend timers, so those were dropped).
 - The Waybar clock format is now set on the `omarchy.clock` bar widget. The custom Pomodoro module
-  was dropped; bar extras are shell plugins now (see `plugins.txt`).
+  was replaced by the techywilbur/omarchy-pomodoro shell plugin (see `plugins.txt`).
 - mako is gone; notifications are rendered by the shell, so the custom notification styling is dropped.
 - Web apps are installed via `omarchy-webapp-install` so icons land in `~/.local/share/icons`.
 - `random-omarchy-theme.sh` uses `omarchy-theme-set` + `omarchy-theme-bg-set` (no swaybg).
