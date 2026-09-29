@@ -467,6 +467,25 @@ else
     echo "   → No plugins listed in plugins.txt"
 fi
 
+# Weather widget: show wind in m/s instead of km/h (the built-in only offers
+# metric km/h or imperial mph). Clone the built-in and patch the wind label.
+echo
+echo "🌬️  Switching weather wind speed to m/s..."
+WEATHER_ID="${USER:-$(id -un)}.weather"
+WEATHER_PANEL="$HOME/.config/omarchy/plugins/$WEATHER_ID/Panel.qml"
+if [ -f "$WEATHER_PANEL" ]; then
+    echo "   → Skipped $WEATHER_ID (already cloned)"
+elif omarchy-plugin-clone omarchy.weather >/dev/null 2>&1; then
+    if grep -q '(current.windspeedKmph + " km/h")' "$WEATHER_PANEL"; then
+        sed -i 's|(current.windspeedKmph + " km/h")|(Math.round(current.windspeedKmph / 3.6) + " m/s")|' "$WEATHER_PANEL"
+        echo "   → Wind shown in m/s ($WEATHER_ID)"
+    else
+        echo "   ⚠️  Wind line not found in $WEATHER_PANEL (Omarchy changed it?), still km/h"
+    fi
+else
+    echo "   ⚠️  Could not clone omarchy.weather (is the Omarchy shell running?)"
+fi
+
 # Install web apps (via omarchy-webapp-install so icons land in the right place)
 echo
 echo "🌐 Installing web apps..."

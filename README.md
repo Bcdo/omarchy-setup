@@ -24,6 +24,7 @@ If you accept the `omarchy-update` prompt, the update runs first but its reboot 
 - `scripts/bin/` - Custom binaries → `~/.local/bin/`
 - `webapps.txt` - Web apps (`name|url|icon`) installed with `omarchy-webapp-install`
 - `plugins.txt` - Shell plugins (`git-url|section`) installed with `omarchy plugin add --enable`
+- Weather widget: `setup.sh` clones `omarchy.weather` to `<user>.weather` and patches it to show wind in m/s
 - `theme-repos.txt` - Git URLs for themes → cloned to `~/.config/omarchy/themes/`
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
