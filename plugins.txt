@@ -3,3 +3,4 @@
 # Installed with: omarchy plugin add <url> --enable --yes
 # Browse: https://omarchy.org/plugins  |  list installed: omarchy plugin list
 https://github.com/techywilbur/omarchy-pomodoro.git|left
+https://github.com/69Harold69/omarchy-gadget-batteries.git|right

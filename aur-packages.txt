@@ -1,3 +1,4 @@
 jetbrains-toolbox
 notion-app-electron
 live-server
+proton-pass-bin
