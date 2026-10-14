@@ -507,6 +507,70 @@ else
     echo "   → No webapps.txt found, skipping"
 fi
 
+# Install AppImages from the latest GitHub release (for apps whose AUR packages lag behind)
+echo
+echo "📦 Installing AppImages..."
+if [ -f appimages.txt ] && grep -qvE '^\s*(#|$)' appimages.txt; then
+    APPIMAGE_DIR="$HOME/Applications"
+    APPIMAGES_INSTALLED=0
+    while IFS='|' read -r name repo; do
+        [[ -z "$name" || "$name" =~ ^# ]] && continue
+        name=$(echo "$name" | xargs)
+        repo=$(echo "$repo" | xargs)
+        APPIMAGE="$APPIMAGE_DIR/$name.AppImage"
+        if [ -f "$APPIMAGE" ]; then
+            echo "   → Skipped $name (already installed)"
+            continue
+        fi
+
+        # x86_64 asset: the .AppImage that isn't an arm64/aarch64 build
+        ASSET_URL=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null \
+            | jq -r '.assets[].browser_download_url | select(test("\\.AppImage$")) | select(test("arm64|aarch64") | not)' \
+            | head -1)
+        if [ -z "$ASSET_URL" ]; then
+            echo "   ⚠️  No x86_64 AppImage found in the latest $repo release"
+            continue
+        fi
+
+        echo "   → Downloading $(basename "$ASSET_URL")..."
+        mkdir -p "$APPIMAGE_DIR"
+        if ! curl -fsSL -o "$APPIMAGE.tmp" "$ASSET_URL"; then
+            rm -f "$APPIMAGE.tmp"
+            echo "   ⚠️  Failed to download $name"
+            continue
+        fi
+        chmod +x "$APPIMAGE.tmp"
+        mv "$APPIMAGE.tmp" "$APPIMAGE"
+
+        # Launcher entry and icon from the AppImage's own .desktop file
+        EXTRACT_DIR=$(mktemp -d)
+        # (the top-level icon is usually a symlink into usr/share/icons, so extract both)
+        (cd "$EXTRACT_DIR" && for pattern in '*.desktop' '*.png' 'usr/share/icons/*'; do
+            "$APPIMAGE" --appimage-extract "$pattern" >/dev/null
+        done) || true
+        DESKTOP_SRC=$(ls "$EXTRACT_DIR"/squashfs-root/*.desktop 2>/dev/null | head -1)
+        if [ -n "$DESKTOP_SRC" ]; then
+            ICON_NAME=$(sed -n 's/^Icon=//p' "$DESKTOP_SRC" | head -1)
+            ICON_DEST="$HOME/.local/share/icons/$ICON_NAME.png"
+            if [ -n "$ICON_NAME" ] && [ -f "$EXTRACT_DIR/squashfs-root/$ICON_NAME.png" ]; then
+                mkdir -p "$(dirname "$ICON_DEST")"
+                cp "$EXTRACT_DIR/squashfs-root/$ICON_NAME.png" "$ICON_DEST"
+            fi
+            mkdir -p "$HOME/.local/share/applications"
+            sed -e "s|^Exec=AppRun|Exec=$APPIMAGE --ozone-platform-hint=auto|" \
+                -e "s|^Icon=.*|Icon=$ICON_DEST|" \
+                "$DESKTOP_SRC" > "$HOME/.local/share/applications/${name,,}.desktop"
+        else
+            echo "   ⚠️  No .desktop file in $name, installed without a launcher entry"
+        fi
+        rm -rf "$EXTRACT_DIR"
+        ((APPIMAGES_INSTALLED++)) || true
+    done < appimages.txt
+    echo "   → Installed $APPIMAGES_INSTALLED AppImage(s)"
+else
+    echo "   → No AppImages listed in appimages.txt"
+fi
+
 # Install themes from GitHub
 echo
 echo "🎨 Installing Omarchy themes..."

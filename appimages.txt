@@ -1,0 +1,6 @@
+# AppImages downloaded from the latest GitHub release into ~/Applications,
+# with a launcher entry and icon taken from the AppImage itself.
+# Format: name|owner/repo   (name is the file name: ~/Applications/<name>.AppImage)
+# Use for apps whose AUR packages lag behind upstream. Update by deleting the
+# AppImage and re-running setup.sh (or via the app's own updater, if it has one).
+NEO|hughhowey/neo
