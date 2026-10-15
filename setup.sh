@@ -44,6 +44,16 @@ backup_and_copy() {
     cp "$src" "$dest"
 }
 
+# Multi-select picker: reads options on stdin, prints the chosen ones.
+# Space toggles, Enter confirms; Enter with nothing selected (or Esc) picks none.
+pick_multiple() {
+    fzf --multi --no-sort --layout=reverse --height=~15 \
+        --header="$1 (Space: select, Enter: install, Enter with none selected: skip)" \
+        --bind 'space:toggle+down' \
+        --bind 'enter:transform:[ "$FZF_SELECT_COUNT" -eq 0 ] && echo abort || echo accept' \
+        || true
+}
+
 # Apply a jq program to ~/.config/omarchy/shell.json (seeded from the Omarchy
 # default when the user file is missing/empty) and ask the shell to reload it.
 shell_json_apply() {
@@ -513,6 +523,10 @@ echo "📦 Installing AppImages..."
 if [ -f appimages.txt ] && grep -qvE '^\s*(#|$)' appimages.txt; then
     APPIMAGE_DIR="$HOME/Applications"
     APPIMAGES_INSTALLED=0
+    MISSING_APPIMAGES=$(grep -vE '^\s*(#|$)' appimages.txt | cut -d'|' -f1 | sed 's/^\s*//; s/\s*$//' \
+        | while read -r name; do [ -f "$APPIMAGE_DIR/$name.AppImage" ] || echo "$name"; done)
+    SELECTED_APPIMAGES=""
+    [ -n "$MISSING_APPIMAGES" ] && SELECTED_APPIMAGES=$(echo "$MISSING_APPIMAGES" | pick_multiple "AppImages to install")
     while IFS='|' read -r name repo; do
         [[ -z "$name" || "$name" =~ ^# ]] && continue
         name=$(echo "$name" | xargs)
@@ -520,6 +534,10 @@ if [ -f appimages.txt ] && grep -qvE '^\s*(#|$)' appimages.txt; then
         APPIMAGE="$APPIMAGE_DIR/$name.AppImage"
         if [ -f "$APPIMAGE" ]; then
             echo "   → Skipped $name (already installed)"
+            continue
+        fi
+        if ! grep -qxF "$name" <<< "$SELECTED_APPIMAGES"; then
+            echo "   → Skipped $name (not selected)"
             continue
         fi
 
@@ -656,13 +674,7 @@ if [ -f aur-packages-slow.txt ] && [ -s aur-packages-slow.txt ]; then
     if [ -n "$MISSING_SLOW_AUR" ]; then
         echo
         echo "📦 Slow-building AUR packages available"
-        read -p "Do you want to install slow-building AUR packages now? (y/n): " install_slow
-        
-        if [[ "$install_slow" =~ ^[Yy]$ ]]; then
-            "$SCRIPT_DIR/install-slow-packages.sh"
-        else
-            echo "   → Skipped. Run './install-slow-packages.sh' anytime to install them."
-        fi
+        "$SCRIPT_DIR/install-slow-packages.sh"
     fi
 fi
 

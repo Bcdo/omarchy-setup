@@ -23,20 +23,19 @@ if [ -z "$MISSING_SLOW_AUR" ]; then
     exit 0
 fi
 
-echo "⚠️  The following packages can take a very long time to compile and install:"
-echo "$MISSING_SLOW_AUR"
+echo "⚠️  These packages can take a very long time to compile and install."
 echo
 
-PACKAGES_TO_INSTALL=()
-while IFS= read -r pkg <&3; do
-    read -p "Install $pkg? (y/n): " confirm_pkg
-    if [[ "$confirm_pkg" =~ ^[Yy]$ ]]; then
-        PACKAGES_TO_INSTALL+=("$pkg")
-    fi
-done 3<<< "$MISSING_SLOW_AUR"
+# Space toggles, Enter confirms; Enter with nothing selected (or Esc) picks none
+mapfile -t PACKAGES_TO_INSTALL < <(echo "$MISSING_SLOW_AUR" \
+    | fzf --multi --no-sort --layout=reverse --height=~15 \
+        --header="Slow AUR packages to install (Space: select, Enter: install, Enter with none selected: skip)" \
+        --bind 'space:toggle+down' \
+        --bind 'enter:transform:[ "$FZF_SELECT_COUNT" -eq 0 ] && echo abort || echo accept' \
+    || true)
 
 if [ ${#PACKAGES_TO_INSTALL[@]} -eq 0 ]; then
-    echo "   → No packages selected for installation"
+    echo "   → No packages selected. Run './install-slow-packages.sh' anytime to install them."
     exit 0
 fi
 
