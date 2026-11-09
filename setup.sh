@@ -293,8 +293,12 @@ else
     echo "   → No idle profile for $MACHINE_TYPE, keeping Omarchy defaults"
 fi
 
-# Install battery charge thresholds (laptop only)
-if [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/udev/99-battery-thresholds.rules ]; then
+# Install battery charge thresholds (laptop only). The rule targets BAT0, which
+# ARM laptops such as Apple Silicon Macs don't have, so skip it there.
+if [ "$MACHINE_TYPE" = "laptop" ] && [ "$ARCH" != "x86_64" ]; then
+    echo
+    echo "🔋 Skipping battery charge thresholds (the rule only supports x86 laptops)"
+elif [ "$MACHINE_TYPE" = "laptop" ] && [ -f configs/udev/99-battery-thresholds.rules ]; then
     echo
     echo "🔋 Installing battery charge thresholds..."
     if [ ! -f /etc/udev/rules.d/99-battery-thresholds.rules ] || \
@@ -477,6 +481,11 @@ if [ -f plugins.txt ] && grep -qvE '^\s*(#|$)' plugins.txt; then
                 [ -n "$PLUGIN_ID" ] || PLUGIN_ID=$(basename "$(ls -td "$PLUGINS_DIR"/*/ | head -1)")
                 PLACEMENT=()
                 [ -n "$plugin_section" ] && PLACEMENT=(--section "$plugin_section")
+                # omarchy-plugin-add only starts a rescan; wait until the shell knows the plugin
+                for _ in $(seq 50); do
+                    omarchy-plugin-list --json 2>/dev/null | jq -e --arg id "$PLUGIN_ID" 'any(.[]; .id == $id)' >/dev/null && break
+                    sleep 0.1
+                done
                 omarchy-plugin-enable "$PLUGIN_ID" "${PLACEMENT[@]}" || echo "   ⚠️  Could not enable $PLUGIN_ID"
                 ((PLUGINS_INSTALLED++)) || true
             else
@@ -498,8 +507,12 @@ WEATHER_PANEL="$HOME/.config/omarchy/plugins/$WEATHER_ID/Panel.qml"
 if [ -f "$WEATHER_PANEL" ]; then
     echo "   → Skipped $WEATHER_ID (already cloned)"
 elif omarchy-plugin-clone omarchy.weather >/dev/null 2>&1; then
-    if grep -q '(current.windspeedKmph + " km/h")' "$WEATHER_PANEL"; then
-        sed -i 's|(current.windspeedKmph + " km/h")|(Math.round(current.windspeedKmph / 3.6) + " m/s")|' "$WEATHER_PANEL"
+    # Omarchy 4.5 wraps the value in displayNumber(); older versions don't
+    sed -i \
+        -e 's|(current.windspeedKmph + " km/h")|(Math.round(current.windspeedKmph / 3.6) + " m/s")|' \
+        -e 's|(displayNumber(current.windspeedKmph) + " km/h")|(displayNumber(Math.round(current.windspeedKmph / 3.6)) + " m/s")|' \
+        "$WEATHER_PANEL"
+    if grep -q '" m/s")' "$WEATHER_PANEL"; then
         echo "   → Wind shown in m/s ($WEATHER_ID)"
     else
         echo "   ⚠️  Wind line not found in $WEATHER_PANEL (Omarchy changed it?), still km/h"
