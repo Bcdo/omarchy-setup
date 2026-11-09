@@ -633,6 +633,52 @@ if [ -d ~/.config/omarchy/themes ] && [ "$(ls -A ~/.config/omarchy/themes 2>/dev
     fi
 fi
 
+# Install Omarchy Dreamscapes: its ten themes, the Experience Pack and every
+# expansion pack except the HUD. Runs after the Hyprland configs are deployed,
+# since copying bindings.lua would otherwise wipe what the packs add to it.
+echo
+echo "🌌 Installing Omarchy Dreamscapes..."
+DREAMSCAPES_REPO="https://github.com/Bcdo/omarchy-dreamscapes.git"
+DREAMSCAPES_DIR="$HOME/.local/share/omarchy-dreamscapes/source"
+DREAMSCAPES_HOOK="$HOME/.config/omarchy/hooks/theme-set.d/dreamscapes-profile"
+install_dreamscapes=y
+if [ -e "$DREAMSCAPES_HOOK" ]; then
+    # Re-running the pack installers over an install backs up their own files
+    # as the "originals", so only reinstall from a clean uninstall.
+    read -p "Dreamscapes is already installed. Uninstall and reinstall it? (y/n): " install_dreamscapes
+fi
+if [[ "$install_dreamscapes" =~ ^[Yy]$ ]]; then
+    if [ -d "$DREAMSCAPES_DIR/.git" ]; then
+        git -C "$DREAMSCAPES_DIR" pull --ff-only --quiet || echo "   ⚠️  Could not update $DREAMSCAPES_DIR, using it as is"
+    else
+        mkdir -p "$(dirname "$DREAMSCAPES_DIR")"
+        GIT_TERMINAL_PROMPT=0 git clone --depth 1 --quiet "$DREAMSCAPES_REPO" "$DREAMSCAPES_DIR" || echo "   ⚠️  Failed to clone $DREAMSCAPES_REPO"
+    fi
+
+    if [ -d "$DREAMSCAPES_DIR/.git" ]; then
+        if [ -e "$DREAMSCAPES_HOOK" ]; then
+            "$DREAMSCAPES_DIR/expansion-packs/uninstall-all"
+            "$DREAMSCAPES_DIR/experience-pack/uninstall"
+        fi
+
+        # install-all-themes switches to each theme as it installs it; return to the current one after.
+        PREVIOUS_THEME=$(cat ~/.local/state/omarchy/current/theme.name 2>/dev/null || true)
+        "$DREAMSCAPES_DIR/install-all-themes" || echo "   ⚠️  Failed to install some Dreamscapes themes"
+        "$DREAMSCAPES_DIR/experience-pack/install" || echo "   ⚠️  Failed to install the Experience Pack"
+        for pack in temporal-rift kinetic-architecture dream-terminal ritual-boot; do
+            "$DREAMSCAPES_DIR/expansion-packs/$pack/install" || echo "   ⚠️  Failed to install the $pack pack"
+        done
+
+        # Drop the theme-cycle keybinding the Experience Pack appends
+        sed -i '/^--# BEGIN OMARCHY DREAMSCAPES$/,/^--# END OMARCHY DREAMSCAPES$/d' ~/.config/hypr/bindings.lua
+
+        [ -n "$PREVIOUS_THEME" ] && omarchy-theme-set "$PREVIOUS_THEME"
+        echo "   → Dreamscapes installed (without the HUD and theme-cycle keybinding)"
+    fi
+else
+    echo "   → Skipped, keeping the existing Dreamscapes install"
+fi
+
 # Set Firefox as default browser
 echo
 echo "🌐 Setting Firefox as default browser..."

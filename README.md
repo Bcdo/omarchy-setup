@@ -27,6 +27,7 @@ If you accept the `omarchy-update` prompt, the update runs first but its reboot 
 - `appimages.txt` - AppImages (`name|owner/repo`) downloaded from the latest GitHub release to `~/Applications`, with a launcher entry (for apps whose AUR packages lag behind)
 - Weather widget: `setup.sh` clones `omarchy.weather` to `<user>.weather` and patches it to show wind in m/s
 - `theme-repos.txt` - Git URLs for themes → cloned to `~/.config/omarchy/themes/`
+- Dreamscapes: `setup.sh` clones [omarchy-dreamscapes](https://github.com/Bcdo/omarchy-dreamscapes) to `~/.local/share/omarchy-dreamscapes/source` and installs its ten themes, the Experience Pack and every expansion pack except the HUD, then removes the theme-cycle keybinding. If it is already installed, it asks before uninstalling and reinstalling
 - `packages.txt`, `aur-packages.txt`, `aur-packages-slow.txt` - Package lists
 - `npm-packages.txt` - Global npm packages
 
