@@ -7,6 +7,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+source scripts/arch-filter.sh
 
 echo "=== Slow-Building AUR Package Installer ==="
 echo
@@ -16,10 +17,10 @@ if [ ! -f aur-packages-slow.txt ] || [ ! -s aur-packages-slow.txt ]; then
     exit 0
 fi
 
-MISSING_SLOW_AUR=$(comm -23 <(sort aur-packages-slow.txt) <(yay -Qq | sort))
+MISSING_SLOW_AUR=$(comm -23 <(sort aur-packages-slow.txt) <(yay -Qq | sort) | filter_aur_for_arch)
 
 if [ -z "$MISSING_SLOW_AUR" ]; then
-    echo "✅ All slow-building packages are already installed!"
+    echo "✅ No slow-building packages left to install"
     exit 0
 fi
 

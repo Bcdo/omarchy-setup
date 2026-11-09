@@ -14,6 +14,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+source scripts/arch-filter.sh
 
 TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
 
@@ -185,6 +186,17 @@ fi
 echo "📦 Installing packages..."
 if [ -f packages.txt ]; then
     MISSING_PKGS=$(comm -23 <(sort packages.txt) <(pacman -Qq | sort))
+    # On ARM, skip packages the repositories don't build for this architecture
+    if [ "$ARCH" != "x86_64" ]; then
+        MISSING_PKGS=$(echo "$MISSING_PKGS" | while read -r pkg; do
+            [ -z "$pkg" ] && continue
+            if pacman -Si "$pkg" &>/dev/null; then
+                echo "$pkg"
+            else
+                echo "   ⚠️  Skipping $pkg (not in the $ARCH repositories)" >&2
+            fi
+        done)
+    fi
     if [ -n "$MISSING_PKGS" ]; then
         echo "$MISSING_PKGS" | sudo pacman -S --needed -
     else
@@ -196,7 +208,7 @@ fi
 if [ -f aur-packages.txt ] && [ -s aur-packages.txt ]; then
     echo
     echo "📦 Installing AUR packages..."
-    MISSING_AUR=$(comm -23 <(sort aur-packages.txt) <(yay -Qq | sort))
+    MISSING_AUR=$(comm -23 <(sort aur-packages.txt) <(yay -Qq | sort) | filter_aur_for_arch)
     if [ -n "$MISSING_AUR" ]; then
         echo "$MISSING_AUR" | yay -S --needed --answerdiff None --answerclean None --removemake -
     else
@@ -541,12 +553,14 @@ if [ -f appimages.txt ] && grep -qvE '^\s*(#|$)' appimages.txt; then
             continue
         fi
 
-        # x86_64 asset: the .AppImage that isn't an arm64/aarch64 build
+        # The .AppImage for this machine: an arm64/aarch64 build on ARM, any other build on x86_64
+        IS_ARM=false
+        [ "$ARCH" != "x86_64" ] && IS_ARM=true
         ASSET_URL=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null \
-            | jq -r '.assets[].browser_download_url | select(test("\\.AppImage$")) | select(test("arm64|aarch64") | not)' \
+            | jq -r --argjson arm "$IS_ARM" '.assets[].browser_download_url | select(test("\\.AppImage$")) | select(test("arm64|aarch64") == $arm)' \
             | head -1)
         if [ -z "$ASSET_URL" ]; then
-            echo "   ⚠️  No x86_64 AppImage found in the latest $repo release"
+            echo "   ⚠️  No $ARCH AppImage found in the latest $repo release"
             continue
         fi
 
